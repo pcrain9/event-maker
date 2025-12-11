@@ -1,0 +1,29 @@
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+from .seed import seed_database
+from .db import init_models, get_db
+from .endpoints import users
+
+app = FastAPI()
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    expose_headers=["*"],
+)
+
+@app.on_event("startup")
+async def on_startup():
+    print("backend STARTUP — backend.main loaded")
+    # Ensure tables exist first, then seed data
+    await init_models()
+    await seed_database()
+
+
+app.include_router(users.router)
+@app.get("/")
+async def root():
+    return {"message": "Hello World"}
