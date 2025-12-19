@@ -4,6 +4,7 @@ SQLAlchemy
 asyncpg
 alembic
 python-dotenv
+python-multipart
 bcrypt
 PyJWT 
 # Optional dev/test
