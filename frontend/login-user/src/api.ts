@@ -25,3 +25,16 @@ export const loginUser = async (req: {
     console.error("Login failed:", error);
   }
 };
+
+export const getEvents = async () => {
+  axios.get("http://localhost:8000/events/").then((response) => {
+    console.log(response);
+    return response.data;
+  });
+};
+export const getEventItems = async (eventId: number) => {
+  axios.get(`http://localhost:8000/events/${eventId}`).then((response) => {
+    console.log(response);
+    return response.data;
+  });
+};

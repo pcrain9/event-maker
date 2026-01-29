@@ -1,7 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .seed import seed_database
+from backend.endpoints import events
+
+from .scripts.seed import seed_database
 from .db import init_models, get_db
 from .endpoints import users
 
@@ -24,3 +26,4 @@ async def on_startup():
 
 
 app.include_router(users.router)
+app.include_router(events.router)
