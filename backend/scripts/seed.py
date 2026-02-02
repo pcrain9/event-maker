@@ -1,18 +1,64 @@
-from sqlalchemy import select
+from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 from ..models.user import User
-from ..db import AsyncSessionLocal, init_models, engine
+from ..models.event import Event
+from ..models.event_item import Event_Item
+from ..db import AsyncSessionLocal, init_models, engine, Base
 from .seed_users import seed_user_database
 from .seed_event import seed_event_database
 import asyncio
 import bcrypt
 
-async def seed_database():
+
+async def drop_all_tables():
+    """Drop all tables from the database."""
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+
+
+async def clear_all_data():
+    """Delete all rows from all tables, respecting foreign key constraints."""
+    async with AsyncSessionLocal() as session:  # type: ignore
+        try:
+            # Delete in order of foreign key dependencies
+            # event_items references events, so delete first
+            await session.execute(delete(Event_Item))
+            
+            # events is independent
+            await session.execute(delete(Event))
+            
+            # users is independent
+            await session.execute(delete(User))
+            
+            # Commit all deletions
+            await session.commit()
+            print("✓ Database cleared")
+            
+        except Exception as e:
+            await session.rollback()
+            print(f"❌ Error clearing database: {e}")
+            raise
+
+
+async def seed_database(clear: bool = False):
+    """
+    Seed the database with sample data.
+    
+    Args:
+        clear: If True, delete all existing data before seeding. Default is False.
+    """
     # Recreate all tables with updated schema
     await init_models()
+    
+    # Clear existing data if requested
+    if clear:
+        await clear_all_data()
+    
     # Seed data
     await seed_event_database()
     await seed_user_database()
+    print("✅ Database seeded successfully!")
+
 
 if __name__ == "__main__":
     asyncio.run(seed_database())
