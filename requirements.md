@@ -11,3 +11,9 @@
 - can create events
 - can update events
 - events: title, speakers
+
+# scripts
+
+```
+cd /home/pc9/code/full-stack-1/backend && docker compose exec backend python -m backend.scripts.reset
+```

@@ -1,11 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from backend.endpoints import events
+from backend.routes import events
 
 from .scripts.seed import seed_database
 from .db import init_models, get_db
-from .endpoints import users
+from .routes import users
 
 app = FastAPI()
 # Add CORS middleware

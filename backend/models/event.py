@@ -1,5 +1,5 @@
 from typing import TYPE_CHECKING
-from sqlalchemy import Integer, String, Identity
+from sqlalchemy import Integer, String, Identity, JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from ..db import Base
 
@@ -11,6 +11,9 @@ class Event(Base):
     __tablename__ = "events"
 
     id: Mapped[int] = mapped_column(Integer, Identity(), primary_key=True, index=True)
+    title: Mapped[str] = mapped_column(String(255), nullable=False)
+    hero_image_url: Mapped[str] = mapped_column(String(255), nullable=True) 
+    color_scheme: Mapped[dict] = mapped_column(JSON, nullable=False) 
     
     # Relationship to Event_Item
     items: Mapped[list["Event_Item"]] = relationship("Event_Item", back_populates="event")
