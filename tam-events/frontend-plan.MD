@@ -11,15 +11,17 @@
 ## 2) Scope & Routes
 
 - **Public routes:**
-  - Home (layout + schedule index)
-  - Sponsors
-  - Multi-event view (route accepts multiple event IDs and renders returned data)
+  - `/` Home layout with tabs
+    - `tab=events` Schedule index (accordion by day)
+    - `tab=sponsors` Sponsors (static)
+    - `ids=1,2,3` Optional multi-event view within events tab (IDs passed to backend)
 - **Auth routes:**
-  - Login
+  - `/login` Admin login
 - **Admin routes (protected):**
-  - Admin dashboard (events + event items CRUD)
-  - Announcements management
-  - Theme color scheme picker
+  - `/admin` Admin layout with tabs
+    - `tab=events` Events + event items CRUD
+    - `tab=announcements` Announcements management
+    - `tab=theme` Theme color scheme picker
 
 ## 3) Component Inventory
 
@@ -30,6 +32,11 @@
 ## 4) Data & Types
 
 - **Entities:** Event, EventItem, Speaker, Announcement, ThemeColors
+- **Source of truth:** Mirror the backend models in backend/models when defining TypeScript datatypes (keep fields and naming aligned).
+- **Model links:**
+  - [backend/models/event.py](../backend/models/event.py)
+  - [backend/models/event_item.py](../backend/models/event_item.py)
+  - [backend/models/user.py](../backend/models/user.py)
 - **Theme schema:**
   - primary, secondary, tertiary, background, alt_background, text, title_text
 
@@ -40,8 +47,7 @@
 **Goal:** App scaffolding with routes and layout shell.
 
 - 1. Confirm scope and routes from frontend-description.MD and finalize route map.
-- 2. Implement React Router routes in App.tsx (home layout, index, sponsors, login, admin).
-- 2. Implement React Router routes in App.tsx (home layout, index, sponsors, multi-event, login, admin).
+- 2. Implement React Router routes in App.tsx (home, login, admin) with tab/query-state routing on home and admin.
 - 3. Create layout shell component with hero, notifications, nav, outlet, footer.
 
 ### Phase 2 — Core UI Components
