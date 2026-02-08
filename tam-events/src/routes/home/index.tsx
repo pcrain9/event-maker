@@ -1,0 +1,295 @@
+import { useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
+import LayoutShell from "../../components/layout/LayoutShell";
+import { Schedule } from "../../components/schedule";
+import type { EventItem, HomeTab, ScheduleDay } from "../../types";
+
+const DEFAULT_TAB: HomeTab = "events";
+
+const normalizeHomeTab = (value: string | null): HomeTab => {
+  if (value === "events" || value === "sponsors") return value;
+  return DEFAULT_TAB;
+};
+
+const dummyEventItems: EventItem[] = [
+  {
+    id: 101,
+    title: "Welcome and opening remarks",
+    sponsor: "Keynote",
+    time: "2026-02-07T09:00:00-06:00",
+    speakers: [
+      {
+        name: "Dr. Maya Patel",
+        headshot: "https://i.pravatar.cc/160?img=47",
+        institution: "TAM Committee",
+      },
+      {
+        name: "Aidan Ruiz",
+        headshot: "https://i.pravatar.cc/160?img=12",
+        institution: "TAM Committee",
+      },
+    ],
+    link: "https://tam.example.com/opening",
+    description: "Kickoff for day one and a quick tour of the program.",
+    location: "Main Hall",
+    cancelled: false,
+    slides: ["https://tam.example.com/slides/opening.pdf"],
+    event_id: 1,
+  },
+  {
+    id: 102,
+    title: "Designing for daily momentum",
+    sponsor: "Experience",
+    time: "2026-02-07T10:30:00-06:00",
+    speakers: [
+      {
+        name: "Riley Chen",
+        headshot: "https://i.pravatar.cc/160?img=32",
+        institution: "Momentum Lab",
+      },
+    ],
+    link: "https://tam.example.com/momentum",
+    description: "Tactics for keeping teams aligned through rapid cycles.",
+    location: "Studio A",
+    cancelled: false,
+    slides: null,
+    event_id: 1,
+  },
+  {
+    id: 103,
+    title: "Operational craft workshop",
+    sponsor: "Operations",
+    time: "2026-02-07T13:00:00-06:00",
+    speakers: [
+      {
+        name: "Jordan Lee",
+        headshot: "https://i.pravatar.cc/160?img=15",
+        institution: "Ops Guild",
+      },
+      {
+        name: "Priya Desai",
+        headshot: "https://i.pravatar.cc/160?img=5",
+        institution: "Ops Guild",
+      },
+    ],
+    link: "https://tam.example.com/ops-workshop",
+    description: "Hands-on session for workflow design and handoffs.",
+    location: "Workshop B",
+    cancelled: false,
+    slides: ["https://tam.example.com/slides/ops-workshop.pdf"],
+    event_id: 1,
+  },
+  {
+    id: 201,
+    title: "Community roundtable",
+    sponsor: "Community",
+    time: "2026-02-08T09:30:00-06:00",
+    speakers: [
+      {
+        name: "Avery Brooks",
+        headshot: "https://i.pravatar.cc/160?img=56",
+        institution: "Community Partners",
+      },
+      {
+        name: "Noah Kim",
+        headshot: "https://i.pravatar.cc/160?img=23",
+        institution: "Community Partners",
+      },
+    ],
+    link: "https://tam.example.com/roundtable",
+    description: "Peer-led discussion with live Q&A.",
+    location: "Forum C",
+    cancelled: false,
+    slides: null,
+    event_id: 1,
+  },
+  {
+    id: 202,
+    title: "Sponsor showcase",
+    sponsor: "Sponsors",
+    time: "2026-02-08T11:00:00-06:00",
+    speakers: null,
+    link: "https://tam.example.com/showcase",
+    description: "Highlights from this year's partners and demos.",
+    location: "Expo Floor",
+    cancelled: false,
+    slides: null,
+    event_id: 1,
+  },
+  {
+    id: 301,
+    title: "Future of TAM",
+    sponsor: "Keynote",
+    time: "2026-02-09T10:00:00-06:00",
+    speakers: [
+      {
+        name: "Samira Ortiz",
+        headshot: "https://i.pravatar.cc/160?img=44",
+        institution: "TAM Futures",
+      },
+    ],
+    link: "https://tam.example.com/future",
+    description: "Closing keynote with a look ahead at next year.",
+    location: "Main Hall",
+    cancelled: false,
+    slides: null,
+    event_id: 1,
+  },
+  {
+    id: 302,
+    title: "Closing reflections",
+    sponsor: "Closing",
+    time: "2026-02-09T12:30:00-06:00",
+    speakers: [
+      {
+        name: "Casey Wright",
+        headshot: "https://i.pravatar.cc/160?img=28",
+        institution: "TAM Committee",
+      },
+      {
+        name: "Morgan Hill",
+        headshot: "https://i.pravatar.cc/160?img=3",
+        institution: "TAM Committee",
+      },
+    ],
+    link: "https://tam.example.com/closing",
+    description: "Final reflections and handoff notes.",
+    location: "Main Hall",
+    cancelled: false,
+    slides: null,
+    event_id: 1,
+  },
+];
+
+const formatDayLabel = (date: Date) =>
+  date.toLocaleDateString("en-US", { weekday: "long" });
+
+const formatDayDate = (date: Date) =>
+  date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+
+const formatSessionTime = (date: Date) =>
+  date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+
+const getSessionStatus = (time: Date) => {
+  const now = new Date();
+  const diffMs = time.getTime() - now.getTime();
+  const liveWindowMs = 45 * 60 * 1000;
+  const upNextWindowMs = 90 * 60 * 1000;
+
+  if (diffMs <= 0 && diffMs >= -liveWindowMs) {
+    return "live" as const;
+  }
+
+  if (diffMs > 0 && diffMs <= upNextWindowMs) {
+    return "up-next" as const;
+  }
+
+  return "later" as const;
+};
+
+const buildScheduleDays = (items: EventItem[]): ScheduleDay[] => {
+  const groups = new Map<string, EventItem[]>();
+
+  items.forEach((item) => {
+    const date = new Date(item.time);
+    const key = date.toISOString().split("T")[0];
+    const group = groups.get(key);
+
+    if (group) {
+      group.push(item);
+    } else {
+      groups.set(key, [item]);
+    }
+  });
+
+  return Array.from(groups.entries())
+    .sort(([left], [right]) => left.localeCompare(right))
+    .map(([key, dayItems]) => {
+      const dayDate = new Date(`${key}T00:00:00`);
+      const sortedItems = dayItems
+        .slice()
+        .sort(
+          (left, right) =>
+            new Date(left.time).getTime() - new Date(right.time).getTime(),
+        );
+
+      return {
+        label: formatDayLabel(dayDate),
+        date: formatDayDate(dayDate),
+        focus: "Program updates and sessions",
+        sessions: sortedItems.map((item) => {
+          const sessionTime = new Date(item.time);
+          return {
+            time: formatSessionTime(sessionTime),
+            title: item.title,
+            room: item.location ?? "TBA",
+            track: item.sponsor ?? "General",
+            status: item.cancelled ? "later" : getSessionStatus(sessionTime),
+            speakers: item.speakers ?? null,
+            description: item.description ?? null,
+          };
+        }),
+      };
+    });
+};
+
+const scheduleDays = buildScheduleDays(dummyEventItems);
+
+export default function HomeRoute() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tab = normalizeHomeTab(searchParams.get("tab"));
+  const navItems = [
+    { label: "Events", href: "?tab=events", isActive: tab === "events" },
+    { label: "Sponsors", href: "?tab=sponsors", isActive: tab === "sponsors" },
+  ];
+  const notices = [
+    {
+      tone: "info" as const,
+      title: "Check-in opens at 8:00 AM",
+      message: "Stop by the welcome desk for your badge and day-one guide.",
+    },
+  ];
+
+  useEffect(() => {
+    const current = searchParams.get("tab");
+    if (current !== tab) {
+      const next = new URLSearchParams(searchParams);
+      next.set("tab", tab);
+      setSearchParams(next, { replace: true });
+    }
+  }, [searchParams, setSearchParams, tab]);
+
+  return (
+    <LayoutShell
+      title="Today at TAM"
+      subtitle="Browse the program, jump into highlighted sessions, and keep an eye on room shifts as they roll in."
+      navItems={navItems}
+      notices={notices}
+    >
+      {tab === "events" ? (
+        <section className="layout__panel">
+          <div className="schedule__intro">
+            <div>
+              <h2>Schedule</h2>
+              <p>
+                Plan your day with the latest rooms, tracks, and featured
+                sessions.
+              </p>
+            </div>
+          </div>
+
+          <div className="schedule">
+            {scheduleDays.map((day, index) => (
+              <Schedule key={day.label} day={day} defaultOpen={index === 0} />
+            ))}
+          </div>
+        </section>
+      ) : (
+        <section className="layout__panel">
+          <h2>Sponsors</h2>
+          <p>Partner highlights and sponsor spotlights will live here.</p>
+        </section>
+      )}
+    </LayoutShell>
+  );
+}

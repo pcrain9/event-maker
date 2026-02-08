@@ -1,4 +1,4 @@
-import LayoutShell from "../components/layout/LayoutShell";
+import LayoutShell from "../../components/layout/LayoutShell";
 
 export default function LoginRoute() {
   return (

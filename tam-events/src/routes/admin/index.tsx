@@ -1,46 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import LayoutShell from "../components/layout/LayoutShell";
-
-type AdminTab = "events" | "announcements" | "theme";
-
-type AdminEvent = {
-  id: number;
-  title: string;
-  dateRange: string;
-  location: string;
-  status: "live" | "draft" | "archived";
-  itemsCount: number;
-};
-
-type AdminEventItem = {
-  id: number;
-  eventId: number;
-  title: string;
-  time: string;
-  room: string;
-  speaker: string;
-  status: "live" | "up-next" | "later" | "draft";
-};
-
-type AdminAnnouncement = {
-  id: number;
-  title: string;
-  body: string;
-  tone: "info" | "success" | "warning" | "danger";
-  starts: string;
-  ends: string;
-};
-
-type ThemeColors = {
-  primary: string;
-  secondary: string;
-  tertiary: string;
-  background: string;
-  alt_background: string;
-  text: string;
-  title_text: string;
-};
+import LayoutShell from "../../components/layout/LayoutShell";
+import type {
+  AdminAnnouncement,
+  AdminEvent,
+  AdminEventItem,
+  AdminTab,
+  ThemeColors,
+} from "../../types";
 
 const DEFAULT_TAB: AdminTab = "events";
 
@@ -253,7 +220,9 @@ export default function AdminRoute() {
           <div className="admin__grid">
             <div className="admin__card admin__card--accent">
               <p className="admin__eyebrow">Active events</p>
-              <h3>{events.filter((event) => event.status === "live").length}</h3>
+              <h3>
+                {events.filter((event) => event.status === "live").length}
+              </h3>
               <p className="admin__muted">Live schedules on the homepage.</p>
             </div>
             <div className="admin__card">
@@ -265,9 +234,7 @@ export default function AdminRoute() {
                   ).length
                 }
               </h3>
-              <p className="admin__muted">
-                Items in the next rotation window.
-              </p>
+              <p className="admin__muted">Items in the next rotation window.</p>
             </div>
             <div className="admin__card">
               <p className="admin__eyebrow">Draft changes</p>
@@ -299,10 +266,7 @@ export default function AdminRoute() {
                       </p>
                     </div>
                     <div className="admin__list-meta">
-                      <span
-                        className="admin__pill"
-                        data-tone={event.status}
-                      >
+                      <span className="admin__pill" data-tone={event.status}>
                         {event.status}
                       </span>
                       <span className="admin__count">
@@ -338,10 +302,7 @@ export default function AdminRoute() {
                       </p>
                     </div>
                     <div className="admin__list-meta">
-                      <span
-                        className="admin__pill"
-                        data-tone={item.status}
-                      >
+                      <span className="admin__pill" data-tone={item.status}>
                         {item.status}
                       </span>
                       <button
@@ -382,10 +343,7 @@ export default function AdminRoute() {
                     <p className="admin__eyebrow">{announcement.tone}</p>
                     <h3>{announcement.title}</h3>
                   </div>
-                  <span
-                    className="admin__pill"
-                    data-tone={announcement.tone}
-                  >
+                  <span className="admin__pill" data-tone={announcement.tone}>
                     {announcement.tone}
                   </span>
                 </div>
@@ -474,7 +432,10 @@ export default function AdminRoute() {
                   {activeModal === "theme" && "Theme editor"}
                 </h3>
               </div>
-              <button className="admin__button admin__button--ghost" onClick={closeModal}>
+              <button
+                className="admin__button admin__button--ghost"
+                onClick={closeModal}
+              >
                 Close
               </button>
             </div>
@@ -550,14 +511,20 @@ export default function AdminRoute() {
                 </form>
               )}
               {activeModal === "announcement" && (
-                <form className="form" onSubmit={(event) => event.preventDefault()}>
+                <form
+                  className="form"
+                  onSubmit={(event) => event.preventDefault()}
+                >
                   <label className="form__field">
                     <span>Title</span>
                     <input type="text" placeholder="Announcement title" />
                   </label>
                   <label className="form__field">
                     <span>Message</span>
-                    <textarea rows={4} placeholder="What do attendees need to know?" />
+                    <textarea
+                      rows={4}
+                      placeholder="What do attendees need to know?"
+                    />
                   </label>
                   <div className="form__row">
                     <label className="form__field">
@@ -613,7 +580,10 @@ export default function AdminRoute() {
               )}
             </div>
             <div className="modal__footer">
-              <button className="admin__button admin__button--ghost" onClick={closeModal}>
+              <button
+                className="admin__button admin__button--ghost"
+                onClick={closeModal}
+              >
                 Cancel
               </button>
               <button className="admin__button admin__button--primary">

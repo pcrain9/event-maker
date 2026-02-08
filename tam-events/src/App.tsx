@@ -1,9 +1,8 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import { RequireAuth } from "./auth/auth-guard";
 import AdminRoute from "./routes/admin";
 import HomeRoute from "./routes/home";
-import LoginRoute from "./routes/login";
 import "./styles/app.scss";
+import LoginRoute from "./routes/login";
 
 function App() {
   return (
