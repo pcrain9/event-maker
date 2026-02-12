@@ -1,8 +1,16 @@
-import { useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import LayoutShell from "../../components/layout/LayoutShell";
 import { Schedule } from "../../components/schedule";
-import type { EventItem, HomeTab, ScheduleDay } from "../../types";
+import ScheduleSkeleton from "../../components/skeleton-loader";
+import type {
+  EventItem,
+  EventResponse,
+  HomeTab,
+  ScheduleDay,
+  ThemeColors,
+} from "../../types";
+import { getEventItems } from "../../api";
 
 const DEFAULT_TAB: HomeTab = "events";
 
@@ -10,6 +18,9 @@ const normalizeHomeTab = (value: string | null): HomeTab => {
   if (value === "events" || value === "sponsors") return value;
   return DEFAULT_TAB;
 };
+
+const HERO_PLACEHOLDER_URL =
+  "https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=1600&q=80";
 
 const dummyEventItems: EventItem[] = [
   {
@@ -220,10 +231,11 @@ const buildScheduleDays = (items: EventItem[]): ScheduleDay[] => {
         sessions: sortedItems.map((item) => {
           const sessionTime = new Date(item.time);
           return {
+            id: item.id,
             time: formatSessionTime(sessionTime),
             title: item.title,
             room: item.location ?? "TBA",
-            track: item.sponsor ?? "General",
+            track: item.sponsor ?? null,
             status: item.cancelled ? "later" : getSessionStatus(sessionTime),
             speakers: item.speakers ?? null,
             description: item.description ?? null,
@@ -233,11 +245,28 @@ const buildScheduleDays = (items: EventItem[]): ScheduleDay[] => {
     });
 };
 
-const scheduleDays = buildScheduleDays(dummyEventItems);
+const applyColorScheme = (scheme: ThemeColors) => {
+  const root = document.documentElement;
+  root.style.setProperty("--bg", scheme.background);
+  root.style.setProperty("--bg-alt", scheme.alt_background);
+  root.style.setProperty("--ink", scheme.text);
+  root.style.setProperty("--muted", scheme.secondary);
+  root.style.setProperty("--accent", scheme.primary);
+  root.style.setProperty("--accent-soft", scheme.secondary);
+  root.style.setProperty("--line", scheme.tertiary);
+  root.style.setProperty("--card", scheme.alt_background);
+};
 
 export default function HomeRoute() {
   const [searchParams, setSearchParams] = useSearchParams();
   const tab = normalizeHomeTab(searchParams.get("tab"));
+  const [eventData, setEventData] = useState<EventResponse | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const scheduleDays = useMemo(
+    () => buildScheduleDays(eventData?.event_items ?? dummyEventItems),
+    [eventData],
+  );
   const navItems = [
     { label: "Events", href: "?tab=events", isActive: tab === "events" },
     { label: "Sponsors", href: "?tab=sponsors", isActive: tab === "sponsors" },
@@ -259,12 +288,42 @@ export default function HomeRoute() {
     }
   }, [searchParams, setSearchParams, tab]);
 
+  useEffect(() => {
+    let isMounted = true;
+    const fetchEvent = async () => {
+      try {
+        setIsLoading(true);
+        const data = await getEventItems(1);
+        if (!isMounted) return;
+        setEventData(data);
+        applyColorScheme(data.color_scheme);
+        setLoadError(null);
+      } catch (error) {
+        if (!isMounted) return;
+        console.error("Failed to load event items:", error);
+        setLoadError("Unable to load event data right now.");
+      } finally {
+        if (!isMounted) return;
+        setIsLoading(false);
+      }
+    };
+
+    fetchEvent();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const title = eventData?.title ?? "Today at TAM";
+  const heroImageUrl = eventData?.hero_image_url ?? HERO_PLACEHOLDER_URL;
+
   return (
     <LayoutShell
-      title="Today at TAM"
+      title={title}
       subtitle="Browse the program, jump into highlighted sessions, and keep an eye on room shifts as they roll in."
       navItems={navItems}
       notices={notices}
+      heroImageUrl={heroImageUrl}
     >
       {tab === "events" ? (
         <section className="layout__panel">
@@ -275,13 +334,21 @@ export default function HomeRoute() {
                 Plan your day with the latest rooms, tracks, and featured
                 sessions.
               </p>
+              {isLoading ? (
+                <p className="admin__muted">Loading schedule...</p>
+              ) : null}
+              {loadError ? <p className="admin__muted">{loadError}</p> : null}
             </div>
           </div>
 
           <div className="schedule">
-            {scheduleDays.map((day, index) => (
-              <Schedule key={day.label} day={day} defaultOpen={index === 0} />
-            ))}
+            {isLoading ? (
+              <ScheduleSkeleton />
+            ) : (
+              scheduleDays.map((day, index) => (
+                <Schedule key={day.label} day={day} defaultOpen={index === 0} />
+              ))
+            )}
           </div>
         </section>
       ) : (

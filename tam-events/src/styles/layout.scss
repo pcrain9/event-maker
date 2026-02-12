@@ -15,6 +15,16 @@
   overflow: hidden;
 }
 
+.layout__hero-media {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  opacity: 0.25;
+  filter: saturate(0.9) contrast(1.05);
+  pointer-events: none;
+}
+
 .layout__hero::after {
   content: "";
   position: absolute;
