@@ -25,18 +25,18 @@
 
 .admin__button:hover {
   transform: translateY(-1px);
-  border-color: rgba(197, 82, 42, 0.6);
+  border-color: rgb(var(--accent-rgb) / 0.6);
 }
 
 .admin__button--primary {
   background: var(--accent);
   color: #fff;
   border-color: transparent;
-  box-shadow: 0 12px 25px rgba(197, 82, 42, 0.25);
+  box-shadow: 0 12px 25px rgb(var(--accent-rgb) / 0.25);
 }
 
 .admin__button--ghost {
-  background: rgba(255, 255, 255, 0.6);
+  background: var(--glass-soft);
 }
 
 .admin__grid {
@@ -58,14 +58,14 @@
   padding: 1.5rem;
   border-radius: 1.2rem;
   border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.75);
+  background: var(--glass-strong);
   box-shadow: var(--shadow);
   display: grid;
   gap: 0.75rem;
 }
 
 .admin__card--accent {
-  background: linear-gradient(120deg, #fffaf4 0%, #f7e6d4 100%);
+  background: var(--card-accent);
 }
 
 .admin__card h3 {
@@ -142,31 +142,31 @@
   text-transform: uppercase;
   letter-spacing: 0.12rem;
   border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.7);
+  background: var(--glass);
 }
 
 .admin__pill[data-tone="live"] {
-  border-color: rgba(42, 140, 90, 0.5);
-  color: #2a8c5a;
+  border-color: rgb(var(--success-rgb) / 0.5);
+  color: var(--success);
 }
 
 .admin__pill[data-tone="draft"] {
-  border-color: rgba(199, 132, 34, 0.5);
-  color: #9d6a1c;
+  border-color: rgb(var(--warning-rgb) / 0.5);
+  color: var(--warning);
 }
 
 .admin__pill[data-tone="archived"] {
-  border-color: rgba(111, 101, 91, 0.5);
+  border-color: rgb(var(--ink-rgb) / 0.35);
   color: var(--muted);
 }
 
 .admin__pill[data-tone="up-next"] {
-  border-color: rgba(197, 82, 42, 0.5);
+  border-color: rgb(var(--accent-rgb) / 0.5);
   color: var(--accent);
 }
 
 .admin__pill[data-tone="later"] {
-  border-color: rgba(31, 28, 22, 0.3);
+  border-color: rgb(var(--ink-rgb) / 0.3);
   color: var(--ink);
 }
 
@@ -174,7 +174,7 @@
 .admin__pill[data-tone="success"],
 .admin__pill[data-tone="warning"],
 .admin__pill[data-tone="danger"] {
-  border-color: rgba(197, 82, 42, 0.3);
+  border-color: rgb(var(--accent-rgb) / 0.3);
 }
 
 .admin__count {
@@ -225,7 +225,7 @@
 .admin__preview-card {
   border-radius: 1rem;
   padding: 1.5rem;
-  background: linear-gradient(140deg, #fff 0%, #f9efe6 100%);
+  background: var(--preview-card);
   border: 1px solid var(--line);
   display: grid;
   gap: 0.75rem;

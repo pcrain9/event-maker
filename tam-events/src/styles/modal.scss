@@ -10,7 +10,7 @@
 .modal__backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(31, 28, 22, 0.35);
+  background: rgb(var(--ink-rgb) / 0.35);
   backdrop-filter: blur(4px);
   animation: fade-in 0.2s ease-out;
 }
@@ -20,7 +20,7 @@
   width: min(640px, 92vw);
   max-height: 85vh;
   overflow: auto;
-  background: #fffaf4;
+  background: var(--card);
   border-radius: 1.5rem;
   border: 1px solid var(--line);
   box-shadow: var(--shadow);

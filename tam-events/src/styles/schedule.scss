@@ -28,7 +28,7 @@
   gap: 1.25rem;
   padding: 1.5rem;
   border-radius: 1.25rem;
-  background: rgba(255, 255, 255, 0.6);
+  background: var(--glass-soft);
   border: 1px solid var(--line);
 }
 
@@ -50,7 +50,7 @@
 
 .schedule__accordion-summary:focus-visible {
   border-radius: 1rem;
-  box-shadow: 0 0 0 3px rgba(197, 82, 42, 0.25);
+  box-shadow: 0 0 0 3px var(--focus-ring);
 }
 
 .schedule__accordion-meta {
@@ -197,12 +197,12 @@
 }
 
 .schedule__card[data-status="live"] {
-  border-color: rgba(42, 140, 90, 0.5);
-  box-shadow: 0 16px 35px rgba(42, 140, 90, 0.15);
+  border-color: rgb(var(--success-rgb) / 0.5);
+  box-shadow: 0 16px 35px rgb(var(--success-rgb) / 0.15);
 }
 
 .schedule__card[data-status="up-next"] {
-  border-color: rgba(197, 82, 42, 0.45);
+  border-color: rgb(var(--accent-rgb) / 0.45);
 }
 
 .schedule__time {
@@ -243,7 +243,7 @@
   padding: 0.15rem 0.6rem;
   border-radius: 999px;
   border: 1px solid var(--line);
-  background: rgba(197, 82, 42, 0.08);
+  background: rgb(var(--accent-rgb) / 0.08);
   color: var(--ink);
 }
 

@@ -1,15 +1,37 @@
 import { Link } from "react-router-dom";
 import type { BannerProps } from "../../types";
+import { useTheme } from "../../useTheme";
 
 export default function Banner({
   title,
   subtitle,
   navItems = [],
 }: BannerProps) {
+  const { theme, setTheme, themes } = useTheme();
+
   return (
     <header className="layout__hero">
       <div className="layout__hero-inner">
-        <p className="layout__kicker">TAM Events</p>
+        <div className="layout__hero-top">
+          <p className="layout__kicker">TAM Events</p>
+          <div className="layout__theme">
+            <label className="layout__theme-label" htmlFor="theme-select">
+              Theme
+            </label>
+            <select
+              id="theme-select"
+              className="layout__theme-select"
+              value={theme}
+              onChange={(event) => setTheme(event.target.value as typeof theme)}
+            >
+              {themes.map((option) => (
+                <option key={option.id} value={option.id}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
         <h1 className="layout__title">{title}</h1>
         <p className="layout__subtitle">{subtitle}</p>
         {navItems.length > 0 && (
