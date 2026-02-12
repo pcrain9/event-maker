@@ -1,4 +1,7 @@
 import axios from "axios";
+import type { EventIdsResponse, EventResponse } from "./types";
+
+const API_BASE_URL = "http://localhost:8000";
 
 export const loginUser = async (req: {
   username: string;
@@ -26,15 +29,16 @@ export const loginUser = async (req: {
   }
 };
 
-export const getEvents = async () => {
-  axios.get("http://localhost:8000/events/").then((response) => {
-    console.log(response);
-    return response.data;
-  });
+export const getEvents = async (): Promise<EventIdsResponse> => {
+  const response = await axios.get<EventIdsResponse>(`${API_BASE_URL}/events/`);
+  return response.data;
 };
-export const getEventItems = async (eventId: number) => {
-  axios.get(`http://localhost:8000/events/${eventId}`).then((response) => {
-    console.log(response);
-    return response.data;
-  });
+
+export const getEventItems = async (
+  eventId: number,
+): Promise<EventResponse> => {
+  const response = await axios.get<EventResponse>(
+    `${API_BASE_URL}/events/${eventId}`,
+  );
+  return response.data;
 };

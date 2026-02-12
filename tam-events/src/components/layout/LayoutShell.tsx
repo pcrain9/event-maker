@@ -7,6 +7,7 @@ export default function LayoutShell({
   subtitle,
   navItems = [],
   notices = [],
+  heroImageUrl,
   children,
 }: LayoutShellProps) {
   const [dismissedNoticeKeys, setDismissedNoticeKeys] = useState<string[]>([]);
@@ -21,7 +22,12 @@ export default function LayoutShell({
 
   return (
     <div className="layout">
-      <Banner title={title} subtitle={subtitle} navItems={navItems} />
+      <Banner
+        title={title}
+        subtitle={subtitle}
+        navItems={navItems}
+        heroImageUrl={heroImageUrl}
+      />
 
       {visibleNotices.length > 0 && (
         <section className="layout__notices" aria-live="polite">

@@ -6,11 +6,19 @@ export default function Banner({
   title,
   subtitle,
   navItems = [],
+  heroImageUrl,
 }: BannerProps) {
   const { theme, setTheme, themes } = useTheme();
 
   return (
     <header className="layout__hero">
+      {heroImageUrl ? (
+        <div
+          className="layout__hero-media"
+          style={{ backgroundImage: `url(${heroImageUrl})` }}
+          aria-hidden="true"
+        />
+      ) : null}
       <div className="layout__hero-inner">
         <div className="layout__hero-top">
           <p className="layout__kicker">TAM Events</p>
