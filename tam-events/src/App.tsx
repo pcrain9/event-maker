@@ -10,7 +10,7 @@ function App() {
     <ThemeProvider>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<HomeRoute />} />
+          <Route path="/:slug" element={<HomeRoute />} />
           <Route path="/login" element={<LoginRoute />} />
           <Route
             path="/admin"
@@ -20,7 +20,7 @@ function App() {
               // </RequireAuth>
             }
           />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<Navigate to="/austin-2025" replace />} />
         </Routes>
       </BrowserRouter>
     </ThemeProvider>

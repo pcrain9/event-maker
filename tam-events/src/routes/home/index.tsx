@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import LayoutShell from "../../components/layout/LayoutShell";
 import { Schedule } from "../../components/schedule";
 import ScheduleSkeleton from "../../components/skeleton-loader";
@@ -10,7 +10,7 @@ import type {
   ScheduleDay,
   ThemeColors,
 } from "../../types";
-import { getEventItems } from "../../api";
+import { getEventBySlug } from "../../api";
 
 const DEFAULT_TAB: HomeTab = "events";
 
@@ -258,6 +258,7 @@ const applyColorScheme = (scheme: ThemeColors) => {
 };
 
 export default function HomeRoute() {
+  const { slug } = useParams<{ slug: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
   const tab = normalizeHomeTab(searchParams.get("tab"));
   const [eventData, setEventData] = useState<EventResponse | null>(null);
@@ -291,9 +292,14 @@ export default function HomeRoute() {
   useEffect(() => {
     let isMounted = true;
     const fetchEvent = async () => {
+      if (!slug) {
+        setLoadError("No event slug provided");
+        setIsLoading(false);
+        return;
+      }
       try {
         setIsLoading(true);
-        const data = await getEventItems(1);
+        const data = await getEventBySlug(slug);
         if (!isMounted) return;
         setEventData(data);
         applyColorScheme(data.color_scheme);
@@ -312,7 +318,7 @@ export default function HomeRoute() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [slug]);
 
   const title = eventData?.title ?? "Today at TAM";
   const heroImageUrl = eventData?.hero_image_url ?? HERO_PLACEHOLDER_URL;
