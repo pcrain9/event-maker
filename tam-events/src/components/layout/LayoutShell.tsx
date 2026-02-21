@@ -64,7 +64,6 @@ export default function LayoutShell({
       <main className="layout__content">{children}</main>
 
       <footer className="layout__footer">
-        <p>TAM Conference Program. Curated moments, clear schedules.</p>
         <div className="layout__footer-meta">
           <span>Contact: tam-events@conference.org</span>
           <span>Last updated: Feb 7, 2026</span>

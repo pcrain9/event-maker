@@ -124,3 +124,20 @@ export type EventResponse = {
 export type EventIdsResponse = {
   event_ids: number[];
 };
+
+// Authentication Types
+
+export type UserResponse = {
+  id: number;
+  username: string;
+  full_name: string | null;
+  is_active: boolean;
+  created_at: string;
+};
+
+export type LoginResponse = {
+  access_token: string;
+  token_type: string;
+  username: string;
+  user: UserResponse;
+};

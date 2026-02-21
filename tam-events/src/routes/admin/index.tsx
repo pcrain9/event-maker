@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import LayoutShell from "../../components/layout/LayoutShell";
+import { useAuthStore } from "../../auth/store/authStore";
 import type {
   AdminAnnouncement,
   AdminEvent,
@@ -20,6 +21,9 @@ const normalizeAdminTab = (value: string | null): AdminTab => {
 
 export default function AdminRoute() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const user = useAuthStore((state) => state.user);
+  const logout = useAuthStore((state) => state.logout);
   const tab = normalizeAdminTab(searchParams.get("tab"));
   const [activeModal, setActiveModal] = useState<
     "event-item" | "announcement" | "theme" | null
@@ -134,14 +138,7 @@ export default function AdminRoute() {
     },
     { label: "Theme", href: "?tab=theme", isActive: tab === "theme" },
   ];
-  const notices = [
-    {
-      tone: "warning" as const,
-      title: "Draft changes only",
-      message:
-        "Publishing is disabled in staging. Updates here are preview-only.",
-    },
-  ];
+  const notices = [];
 
   useEffect(() => {
     const current = searchParams.get("tab");
@@ -188,6 +185,11 @@ export default function AdminRoute() {
     setThemeDraft((prev) => ({ ...prev, [key]: value }));
   };
 
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
+
   return (
     <LayoutShell
       title="Admin Studio"
@@ -195,6 +197,47 @@ export default function AdminRoute() {
       navItems={navItems}
       notices={notices}
     >
+      {/* User Info & Logout */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          padding: "16px 24px",
+          backgroundColor: "var(--bg-alt)",
+          borderBottom: "1px solid var(--line)",
+          marginBottom: "24px",
+        }}
+      >
+        <div>
+          <p style={{ margin: 0, fontSize: "14px", color: "var(--muted)" }}>
+            Logged in as
+          </p>
+          <p style={{ margin: 0, fontWeight: "600" }}>
+            {user?.username || "Admin User"}
+            {user?.full_name && (
+              <span style={{ fontWeight: "normal", marginLeft: "8px" }}>
+                ({user.full_name})
+              </span>
+            )}
+          </p>
+        </div>
+        <button
+          onClick={handleLogout}
+          style={{
+            padding: "8px 16px",
+            backgroundColor: "transparent",
+            color: "var(--ink)",
+            border: "1px solid var(--line)",
+            borderRadius: "4px",
+            cursor: "pointer",
+            fontSize: "14px",
+          }}
+        >
+          Logout
+        </button>
+      </div>
+
       {tab === "events" && (
         <section className="layout__panel">
           <div className="admin__panel-header">
@@ -324,9 +367,6 @@ export default function AdminRoute() {
           <div className="admin__panel-header">
             <div>
               <h2>Announcements</h2>
-              <p className="admin__muted">
-                Craft urgency and guidance for attendees in real time.
-              </p>
             </div>
             <button
               className="admin__button admin__button--primary"
