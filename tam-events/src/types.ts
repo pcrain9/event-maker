@@ -114,6 +114,7 @@ export type ThemeColors = {
 
 export type EventResponse = {
   id: number;
+  slug: string;
   title: string;
   hero_image_url?: string | null;
   color_scheme: ThemeColors;

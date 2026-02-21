@@ -34,11 +34,11 @@ export const getEvents = async (): Promise<EventIdsResponse> => {
   return response.data;
 };
 
-export const getEventItems = async (
-  eventId: number,
+export const getEventBySlug = async (
+  slug: string,
 ): Promise<EventResponse> => {
   const response = await axios.get<EventResponse>(
-    `${API_BASE_URL}/events/${eventId}`,
+    `${API_BASE_URL}/events/${slug}`,
   );
   return response.data;
 };
