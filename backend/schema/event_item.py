@@ -31,6 +31,7 @@ class EventItemResponse(BaseModel):
     """Schema for event item response - event with list of event items."""
     # Event fields
     id: int
+    slug: str
     title: str
     hero_image_url: Optional[str] = None
     color_scheme: ColorScheme

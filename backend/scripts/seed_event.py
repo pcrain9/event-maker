@@ -24,6 +24,7 @@ async def seed_event_database():
         )
         event = Event(
             title="TAM Annual Meeting 2025",
+            slug="austin-2025",
             hero_image_url=None,
             color_scheme=color_scheme,
         )

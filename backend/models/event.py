@@ -11,6 +11,7 @@ class Event(Base):
     __tablename__ = "events"
 
     id: Mapped[int] = mapped_column(Integer, Identity(), primary_key=True, index=True)
+    slug: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     hero_image_url: Mapped[str] = mapped_column(String(255), nullable=True) 
     color_scheme: Mapped[dict] = mapped_column(JSON, nullable=False) 
