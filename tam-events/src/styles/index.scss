@@ -1,0 +1,115 @@
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=IBM+Plex+Sans:wght@300;400;500;600&family=Outfit:wght@300;400;500;600&family=Playfair+Display:wght@500;600;700&family=Space+Grotesk:wght@400;500;600&display=swap");
+
+:root {
+  color-scheme: light;
+  font-family: var(--font-body);
+  --font-body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Fraunces", "Times New Roman", serif;
+  --bg: #f6efe7;
+  --bg-alt: #efe3d6;
+  --bg-glow-1: #fff8ef;
+  --bg-glow-2: #f4d9c2;
+  --ink: #1f1c16;
+  --ink-rgb: 31 28 22;
+  --muted: #6f655b;
+  --accent: #c5522a;
+  --accent-rgb: 197 82 42;
+  --accent-deep: #9a3e22;
+  --accent-soft: #f2c6a7;
+  --line: #c9b8a6;
+  --card: #fffaf4;
+  --glass: rgba(255, 255, 255, 0.7);
+  --glass-strong: rgba(255, 255, 255, 0.85);
+  --glass-soft: rgba(255, 255, 255, 0.6);
+  --hero-wash: rgba(255, 255, 255, 0.7);
+  --panel-wash: rgba(255, 255, 255, 0.7);
+  --card-accent: linear-gradient(120deg, #fffaf4 0%, #f7e6d4 100%);
+  --preview-card: linear-gradient(140deg, #fff 0%, #f9efe6 100%);
+  --field: #fff;
+  --focus-ring: rgb(var(--accent-rgb) / 0.25);
+  --success: #2a8c5a;
+  --warning: #c78422;
+  --danger: #b7433e;
+  --success-rgb: 42 140 90;
+  --warning-rgb: 199 132 34;
+  --danger-rgb: 183 67 62;
+  --shadow: 0 18px 45px rgba(31, 28, 22, 0.12);
+}
+
+:root[data-theme="harbor"] {
+  color-scheme: light;
+  --font-body: "Space Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Playfair Display", "Times New Roman", serif;
+  --bg: #e4edf2;
+  --bg-alt: #d4e0e8;
+  --bg-glow-1: #f4fbff;
+  --bg-glow-2: #cde3f2;
+  --ink: #182532;
+  --ink-rgb: 24 37 50;
+  --muted: #4c5d6c;
+  --accent: #1a6b6e;
+  --accent-rgb: 26 107 110;
+  --accent-deep: #124e51;
+  --accent-soft: #b8e1de;
+  --line: #a8bdc8;
+  --card: #f7fbfd;
+  --glass: rgba(255, 255, 255, 0.75);
+  --glass-strong: rgba(255, 255, 255, 0.9);
+  --glass-soft: rgba(255, 255, 255, 0.55);
+  --hero-wash: rgba(255, 255, 255, 0.75);
+  --panel-wash: rgba(255, 255, 255, 0.8);
+  --card-accent: linear-gradient(120deg, #f7fbfd 0%, #d9eef4 100%);
+  --preview-card: linear-gradient(140deg, #ffffff 0%, #e2edf4 100%);
+  --field: #ffffff;
+  --shadow: 0 18px 45px rgba(24, 37, 50, 0.16);
+}
+
+:root[data-theme="citrus"] {
+  color-scheme: light;
+  --font-body: "Outfit", "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Fraunces", "Times New Roman", serif;
+  --bg: #fbf4df;
+  --bg-alt: #f4e7c5;
+  --bg-glow-1: #fff9ea;
+  --bg-glow-2: #ffe2a3;
+  --ink: #1a1a18;
+  --ink-rgb: 26 26 24;
+  --muted: #5a5246;
+  --accent: #d27b00;
+  --accent-rgb: 210 123 0;
+  --accent-deep: #a45f00;
+  --accent-soft: #ffe2a3;
+  --line: #d5c29a;
+  --card: #fff8e9;
+  --glass: rgba(255, 255, 255, 0.78);
+  --glass-strong: rgba(255, 255, 255, 0.92);
+  --glass-soft: rgba(255, 255, 255, 0.6);
+  --hero-wash: rgba(255, 255, 255, 0.75);
+  --panel-wash: rgba(255, 255, 255, 0.85);
+  --card-accent: linear-gradient(120deg, #fff8e9 0%, #ffe2b2 100%);
+  --preview-card: linear-gradient(140deg, #ffffff 0%, #ffefcc 100%);
+  --field: #ffffff;
+  --shadow: 0 18px 45px rgba(40, 26, 4, 0.14);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--ink);
+  background: radial-gradient(circle at 15% 15%, var(--bg-glow-1) 0, transparent 55%),
+    radial-gradient(circle at 80% 10%, var(--bg-glow-2) 0, transparent 45%),
+    linear-gradient(140deg, var(--bg), var(--bg-alt));
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+#root {
+  min-height: 100vh;
+}
