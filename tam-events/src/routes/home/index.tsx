@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useParams, useSearchParams } from "react-router-dom";
+import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import LayoutShell from "../../components/layout/LayoutShell";
 import { Schedule } from "../../components/schedule";
 import ScheduleSkeleton from "../../components/skeleton-loader";
@@ -11,6 +11,7 @@ import type {
   ThemeColors,
 } from "../../types";
 import { getEventBySlug } from "../../api";
+import { useAuthStore } from "../../auth/store/authStore";
 
 const DEFAULT_TAB: HomeTab = "events";
 
@@ -260,6 +261,8 @@ const applyColorScheme = (scheme: ThemeColors) => {
 export default function HomeRoute() {
   const { slug } = useParams<{ slug: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const tab = normalizeHomeTab(searchParams.get("tab"));
   const [eventData, setEventData] = useState<EventResponse | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -344,6 +347,14 @@ export default function HomeRoute() {
                 <p className="admin__muted">Loading schedule...</p>
               ) : null}
               {loadError ? <p className="admin__muted">{loadError}</p> : null}
+            </div>
+            <div>
+              <button
+                onClick={() => navigate(isAuthenticated ? "/admin" : "/login")}
+                className="admin__button admin__button--primary"
+              >
+                {isAuthenticated ? "Go to Admin" : "Admin Login"}
+              </button>
             </div>
           </div>
 
