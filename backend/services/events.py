@@ -22,6 +22,21 @@ async def get_event(db:AsyncSession, event_id: int) -> Event | None:
     result = await db.execute(query)
     return result.scalar_one_or_none()
 
+async def get_event_by_slug(db: AsyncSession, slug: str) -> Event | None:
+    """
+    Fetch an event by its slug.
+    
+    Args:
+        db: The database session
+        slug: The slug of the event to fetch
+    
+    Returns:
+        The Event object if found, or None if not found
+    """
+    query = select(Event).where(Event.slug == slug)
+    result = await db.execute(query)
+    return result.scalar_one_or_none()
+
 async def get_event_item(db:AsyncSession, event_id: int, event_item_id: int) -> Event | None:
     """
     Fetch an event item by its event ID and event item ID.
@@ -40,42 +55,43 @@ async def get_event_item(db:AsyncSession, event_id: int, event_item_id: int) -> 
 
 async def get_event_ids(db: AsyncSession) -> dict | None:
     """
-    Fetch all distinct event IDs.
+    Fetch all distinct event slugs.
     
     Args:
         db: The database session
     
     Returns:
-        Dictionary with list of event IDs, or None if no events found
+        Dictionary with list of event slugs, or None if no events found
     """
-    query = select(Event_Item.event_id).distinct()
+    query = select(Event.slug).distinct()
     result = await db.execute(query)
-    event_ids = result.scalars().all()
+    event_slugs = result.scalars().all()
     
-    if not event_ids:
+    if not event_slugs:
         return None
     
-    return {"event_ids": event_ids}
+    return {"event_slugs": event_slugs}
 
 
-async def get_event_with_items(event_id: int, db: AsyncSession) -> EventItemResponse | None:
+async def get_event_with_items(slug: str, db: AsyncSession) -> EventItemResponse | None:
     """
-    Fetch an event and all its items, returning a flattened response.
+    Fetch an event by slug and all its items, returning a flattened response.
     
     Args:
-        event_id: The ID of the event to fetch
+        slug: The slug of the event to fetch
         db: The database session
     
     Returns:
         EventItemResponse with event data and list of items, or None if event not found
     """
-    # Query the Event model
-    event = await get_event(db, event_id)
+    # Query the Event model by slug
+    event = await get_event_by_slug(db, slug)
     if not event:
         return None
     
     # Store event data in method constants
     event_id_val = event.id
+    event_slug = event.slug
     event_title = event.title
     hero_image_url = event.hero_image_url
     # Use default color scheme if not set
@@ -107,6 +123,7 @@ async def get_event_with_items(event_id: int, db: AsyncSession) -> EventItemResp
     # Build and return response
     return EventItemResponse(
         id=event_id_val,
+        slug=event_slug,
         title=event_title,
         hero_image_url=hero_image_url,
         color_scheme=color_scheme,

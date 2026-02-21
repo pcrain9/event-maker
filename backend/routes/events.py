@@ -19,10 +19,10 @@ async def get_event_ids_route(db: AsyncSession = Depends(get_db)):
     
     return result
 
-@router.get("/{event_id}")
-async def get_events(event_id: int, db: AsyncSession = Depends(get_db)):
-    """Fetch an event with all its items."""
-    result = await get_event_with_items(event_id, db)
+@router.get("/{slug}")
+async def get_events(slug: str, db: AsyncSession = Depends(get_db)):
+    """Fetch an event by slug with all its items."""
+    result = await get_event_with_items(slug, db)
     
     if result is None:
         raise HTTPException(status_code=404, detail="Event not found")
