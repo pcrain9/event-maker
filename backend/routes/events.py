@@ -2,9 +2,10 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Request, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.exc import SQLAlchemyError
 
 from backend.db import get_db
-from backend.schema.event_item import GetEventItemsRequest, EventItemResponse, EventItemUpdate
+from backend.schema.event_item import GetEventItemsRequest, EventItemResponse, EventItemUpdate, EventItemDetail
 from backend.models.event_item import Event_Item
 from backend.models.user import User
 from backend.services.events import get_event_with_items, get_event_ids
@@ -34,7 +35,7 @@ async def get_events(slug: str, db: AsyncSession = Depends(get_db)):
     return result
 
 
-@router.put("/{event_id}/items/{item_id}")
+@router.put("/{event_id}/items/{item_id}", response_model=EventItemDetail)
 async def update_event_item_route(
     event_id: int,
     item_id: int,
@@ -47,9 +48,15 @@ async def update_event_item_route(
     
     Requires admin role to access.
     """
-    updated = await update_event_item(db, event_id, item_id, item_update)
-    
-    if not updated:
-        raise HTTPException(status_code=404, detail="Event item not found")
-    
-    return updated
+    try:
+        updated = await update_event_item(db, event_id, item_id, item_update)
+        
+        if not updated:
+            raise HTTPException(status_code=404, detail="Event item not found")
+        
+        return updated
+    except SQLAlchemyError as e:
+        raise HTTPException(
+            status_code=500,
+            detail="Database error occurred while updating event item"
+        )
