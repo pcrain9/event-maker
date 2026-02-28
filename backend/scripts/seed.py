@@ -4,10 +4,8 @@ from ..models.user import User
 from ..models.event import Event
 from ..models.event_item import Event_Item
 from ..db import AsyncSessionLocal, init_models, engine, Base
-from .seed_users import seed_user_database
 from .seed_event import seed_event_database
 import asyncio
-import bcrypt
 
 
 async def drop_all_tables():
@@ -56,7 +54,6 @@ async def seed_database(clear: bool = False):
     
     # Seed data
     await seed_event_database()
-    await seed_user_database()
     print("✅ Database seeded successfully!")
 
 
