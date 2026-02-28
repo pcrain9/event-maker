@@ -1,8 +1,9 @@
 from sqlalchemy import select
+from sqlalchemy.exc import SQLAlchemyError
 
 from backend.models.event import Event
 from backend.models.event_item import Event_Item
-from backend.schema.event_item import EventItemDetail
+from backend.schema.event_item import EventItemDetail, EventItemUpdate
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -23,40 +24,42 @@ async def get_event_item(db:AsyncSession, event_id: int, event_item_id: int) -> 
     result = await db.execute(query)
     return result.scalar_one_or_none()
 
-async def update_event_item(db:AsyncSession, event_id: int, event_item: EventItemDetail) -> dict | None:
+async def update_event_item(
+    db: AsyncSession, 
+    event_id: int, 
+    event_item_id: int,
+    event_item_data: EventItemUpdate
+) -> Event_Item | None:
     """
-    Update an event item given event item ID and new data.
+    Update an event item with the provided data.
     
     Args:
-        event_id: The ID of the event to fetch
-        event_item_id: The ID of the event item to fetch
-        event_item_info: The new information for the event item
         db: The database session
+        event_id: The ID of the event
+        event_item_id: The ID of the event item to update
+        event_item_data: The update data (all fields optional)
     
     Returns:
-        A success message (200) if update is successful, or None if event or item not found
+        The updated Event_Item object if successful, or None if item not found
+        
+    Raises:
+        SQLAlchemyError: If database operation fails
     """
-    # Ensure that the incoming event_item has proper format
-    if not event_item or not event_item.id:
-        return None
     # Get the event item
-    fetched_event_item = await get_event_item(db, event_id, event_item.id)
+    fetched_event_item = await get_event_item(db, event_id, event_item_id)
     if not fetched_event_item:
         return None
-    # Update the event item fields
-    fetched_event_item.title = event_item.title
-    fetched_event_item.sponsor = event_item.sponsor
-    fetched_event_item.time = event_item.time
-    fetched_event_item.speakers = event_item.speakers
-    fetched_event_item.link = event_item.link
-    fetched_event_item.description = event_item.description
-    fetched_event_item.location = event_item.location
-    fetched_event_item.cancelled = event_item.cancelled
-    fetched_event_item.slides = event_item.slides
-    # Commit the changes to the database
-    await db.commit()
-    await db.refresh(fetched_event_item)
-
-    # response should be a simple 200 message.
-    return {"message": "Event item updated successfully"}
+    
+    # Update only provided fields
+    update_data = event_item_data.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(fetched_event_item, field, value)
+    
+    try:
+        await db.commit()
+        await db.refresh(fetched_event_item)
+        return fetched_event_item
+    except SQLAlchemyError:
+        await db.rollback()
+        raise
    

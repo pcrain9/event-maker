@@ -12,6 +12,7 @@ class User(Base):
 	hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
 	full_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
 	is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+	role: Mapped[str] = mapped_column(String(50), default="user", nullable=False)
 	created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
 	def __repr__(self) -> str:  # pragma: no cover - tiny helper

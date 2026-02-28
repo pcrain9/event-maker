@@ -121,3 +121,20 @@ async def get_current_user(
         )
     
     return user
+
+
+async def require_admin(
+    current_user: Annotated[User, Depends(get_current_user)]
+) -> User:
+    """
+    Dependency: requires admin role.
+    
+    Ensures the authenticated user has admin privileges.
+    Raises 403 Forbidden if user is not an admin.
+    """
+    if current_user.role != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin access required"
+        )
+    return current_user

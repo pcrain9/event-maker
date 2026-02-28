@@ -27,6 +27,21 @@ class EventItemDetail(BaseModel):
     class Config:
         from_attributes = True
 
+class EventItemUpdate(BaseModel):
+    """Schema for updating event items - all fields optional."""
+    title: Optional[str] = None
+    sponsor: Optional[str] = None
+    time: Optional[datetime] = None
+    speakers: Optional[list['Speaker']] = None
+    link: Optional[str] = None
+    description: Optional[str] = None
+    location: Optional[str] = None
+    cancelled: Optional[bool] = None
+    slides: Optional[list] = None
+
+    class Config:
+        from_attributes = True
+
 class EventItemResponse(BaseModel):
     """Schema for event item response - event with list of event items."""
     # Event fields
