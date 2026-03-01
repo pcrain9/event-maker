@@ -1,6 +1,6 @@
 from sqlalchemy import select
 from ..models.user import User
-from ..db import AsyncSessionLocal, init_models, engine
+from ..db import get_session_factory, init_models, get_engine
 import bcrypt
 import os
 from dotenv import load_dotenv
@@ -9,7 +9,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 async def seed_user_database():
-    async with AsyncSessionLocal() as session:  # type: ignore
+    session_factory = get_session_factory()
+    async with session_factory() as session:  # type: ignore
         # Check if we already have users
         res = await session.execute(select(User))
         users = res.scalars().all()

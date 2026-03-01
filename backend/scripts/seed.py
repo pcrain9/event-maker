@@ -1,22 +1,18 @@
-from sqlalchemy import select, delete
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import delete
+
+from backend.scripts import seed_users
 from ..models.user import User
 from ..models.event import Event
 from ..models.event_item import Event_Item
-from ..db import AsyncSessionLocal, init_models, engine, Base
+from ..db import get_session_factory, init_models
 from .seed_event import seed_event_database
 import asyncio
 
 
-async def drop_all_tables():
-    """Drop all tables from the database."""
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
-
-
 async def clear_all_data():
     """Delete all rows from all tables, respecting foreign key constraints."""
-    async with AsyncSessionLocal() as session:  # type: ignore
+    session_factory = get_session_factory()
+    async with session_factory() as session:  # type: ignore
         try:
             # Delete in order of foreign key dependencies
             # event_items references events, so delete first
@@ -53,6 +49,7 @@ async def seed_database(clear: bool = False):
         await clear_all_data()
     
     # Seed data
+    await seed_users.seed_user_database()
     await seed_event_database()
     print("✅ Database seeded successfully!")
 
