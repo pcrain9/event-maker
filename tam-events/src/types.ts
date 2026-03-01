@@ -72,7 +72,7 @@ export type EventItem = {
   event_id: number;
 };
 
-export type AdminTab = "events" | "announcements" | "theme";
+export type AdminTab = "events" | "eventItems" | "announcements";
 
 export type AdminEvent = {
   id: number;

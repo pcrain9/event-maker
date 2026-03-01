@@ -4,12 +4,13 @@ from backend.constants import DEFAULT_COLOR_SCHEME
 from backend.updated_2025_conference_data import EVENT_ITEMS_2025
 from ..models.event import Event
 from ..models.event_item import Event_Item
-from ..db import AsyncSessionLocal
+from ..db import get_session_factory
 import asyncio
 
 async def seed_event_database():
     """Seed the 2025 conference event and its items."""
-    async with AsyncSessionLocal() as session:  # type: ignore
+    session_factory = get_session_factory()
+    async with session_factory() as session:  # type: ignore
         # Check if we already have events
         res = await session.execute(select(Event))
         events = res.scalars().all()
