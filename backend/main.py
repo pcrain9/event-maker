@@ -41,5 +41,11 @@ async def on_startup():
         # Don't raise - allow app to start for health checks in CI/CD
 
 
+@app.get("/")
+async def health_check():
+    """Health check endpoint for CI/CD and monitoring."""
+    return {"status": "ok", "service": "tam-events-backend"}
+
+
 app.include_router(users.router)
 app.include_router(events.router)
