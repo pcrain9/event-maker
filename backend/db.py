@@ -7,8 +7,11 @@ from typing import Optional
 # Load environment variables
 load_dotenv()
 
-# Get database URL
+# Get database URL and strip any quotes
 DATABASE_URL = os.getenv("DATABASE_URL")
+if DATABASE_URL:
+    # Remove surrounding quotes if present (common .env file mistake)
+    DATABASE_URL = DATABASE_URL.strip().strip('"').strip("'")
 
 # Create base class for models
 Base = declarative_base()
