@@ -20,9 +20,14 @@ app.add_middleware(
 @app.on_event("startup")
 async def on_startup():
     print("backend STARTUP — backend.main loaded")
-    # Ensure tables exist first, then seed data
-    await init_models()
-    await seed_database()
+    # Skip database initialization if DATABASE_URL is not set (e.g., in CI/CD)
+    import os
+    if os.getenv("DATABASE_URL"):
+        # Ensure tables exist first, then seed data
+        await init_models()
+        await seed_database()
+    else:
+        print("⚠️  DATABASE_URL not set, skipping database initialization")
 
 
 app.include_router(users.router)
