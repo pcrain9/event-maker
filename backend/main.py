@@ -20,14 +20,25 @@ app.add_middleware(
 @app.on_event("startup")
 async def on_startup():
     print("backend STARTUP — backend.main loaded")
-    # Skip database initialization if DATABASE_URL is not set (e.g., in CI/CD)
+    # Skip database initialization if explicitly disabled or DATABASE_URL not set
     import os
-    if os.getenv("DATABASE_URL"):
+    
+    if os.getenv("SKIP_DB_INIT", "false").lower() == "true":
+        print("⚠️  SKIP_DB_INIT is set, skipping database initialization")
+        return
+    
+    if not os.getenv("DATABASE_URL"):
+        print("⚠️  DATABASE_URL not set, skipping database initialization")
+        return
+    
+    try:
         # Ensure tables exist first, then seed data
         await init_models()
         await seed_database()
-    else:
-        print("⚠️  DATABASE_URL not set, skipping database initialization")
+    except Exception as e:
+        print(f"⚠️  Database initialization failed: {e}")
+        print("⚠️  Application started but database is unavailable")
+        # Don't raise - allow app to start for health checks in CI/CD
 
 
 app.include_router(users.router)
