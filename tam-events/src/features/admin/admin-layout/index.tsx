@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
-import type { AdminTab } from "../../types";
-import AdminSidebar from "./AdminSidebar";
+import type { AdminTab } from "../../../types";
+import AdminSidebar from "../admin-sidebar";
 
 type AdminLayoutProps = {
   activeTab: AdminTab;

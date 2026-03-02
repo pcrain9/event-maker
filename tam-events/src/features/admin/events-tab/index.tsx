@@ -23,11 +23,6 @@ export default function EventsTab({ events, eventItems }: EventsTabProps) {
       </div>
 
       <div className="admin__grid">
-        <div className="admin__card admin__card--accent">
-          <p className="admin__eyebrow">Active events</p>
-          <h3>{events.filter((event) => event.status === "live").length}</h3>
-          <p className="admin__muted">Live schedules on the homepage.</p>
-        </div>
         <div className="admin__card">
           <p className="admin__eyebrow">Total sessions</p>
           <h3>{eventItems.length}</h3>
@@ -38,8 +33,7 @@ export default function EventsTab({ events, eventItems }: EventsTabProps) {
       <div className="admin__card">
         <div className="admin__card-header">
           <div>
-            <h3>Event shells</h3>
-            <p className="admin__muted">Tap into event-level details.</p>
+            <h3>Total events</h3>
           </div>
         </div>
         <ul className="admin__list">

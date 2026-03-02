@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuthStore } from "../../auth/store/authStore";
-import AdminLayout from "../../features/admin/AdminLayout";
-import AnnouncementsTab from "../../features/admin/AnnouncementsTab";
-import AnnouncementModal from "../../features/admin/AnnouncementModal";
-import EventItemsTab from "../../features/admin/EventItemsTab";
-import EventItemModal from "../../features/admin/EventItemModal";
-import EventsTab from "../../features/admin/EventsTab";
+import AdminLayout from "../../features/admin/admin-layout";
+import AnnouncementsTab from "../../features/admin/announcements-tab";
+import AnnouncementModal from "../../features/admin/announcement-modal";
+import EventItemsTab from "../../features/admin/event-items-tab";
+import EventItemModal from "../../features/admin/event-item-modal";
+import EventsTab from "../../features/admin/events-tab";
 import type {
   AdminAnnouncement,
   AdminEvent,
