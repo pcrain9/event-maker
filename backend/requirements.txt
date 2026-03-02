@@ -10,3 +10,4 @@ PyJWT
 # Optional dev/test
 pytest
 httpx
+psycopg2
