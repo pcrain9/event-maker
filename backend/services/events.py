@@ -117,3 +117,25 @@ async def get_event_with_items(slug: str, db: AsyncSession) -> EventItemResponse
     )
 
 
+async def get_all_events(db: AsyncSession) -> list[dict]:
+    """
+    Fetch all events with basic info for list views.
+    
+    Args:
+        db: The database session
+    
+    Returns:
+        List of event dictionaries with id, slug, title
+    """
+    query = select(Event).order_by(Event.id)
+    result = await db.execute(query)
+    events = result.scalars().all()
+    
+    return [
+        {
+            "id": event.id,
+            "slug": event.slug,
+            "title": event.title
+        }
+        for event in events
+    ]
