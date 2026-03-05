@@ -1,26 +1,89 @@
-import { useState } from "react";
-import type { AdminEvent, AdminEventItem } from "../../types";
+import { useEffect, useState } from "react";
+import { getEvents, getEventBySlug } from "../../../api";
+import { formatSessionTime } from "../../../utils/date";
+import type { EventResponse } from "../../../types";
 
 type EventItemsTabProps = {
-  events: AdminEvent[];
-  eventItems: AdminEventItem[];
-  onEditItem: (item: AdminEventItem) => void;
+  onEditItem: (item: any) => void;
   onNewItem: () => void;
 };
 
 export default function EventItemsTab({
-  events,
-  eventItems,
   onEditItem,
   onNewItem,
 }: EventItemsTabProps) {
-  const [selectedEventId, setSelectedEventId] = useState<number | null>(
-    events.length > 0 ? events[0].id : null,
+  const [events, setEvents] = useState<any[]>([]);
+  const [eventItems, setEventItems] = useState<any[]>([]);
+  const [selectedEventSlug, setSelectedEventSlug] = useState<string | null>(
+    null,
   );
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const filteredItems = selectedEventId
-    ? eventItems.filter((item) => item.eventId === selectedEventId)
-    : [];
+  // Fetch all events on mount
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        setLoading(true);
+        const response = await getEvents();
+        setEvents(response.events);
+        setError(null);
+      } catch (err) {
+        setError("Failed to load events");
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEvents();
+  }, []);
+
+  // Fetch event items when selected event changes
+  useEffect(() => {
+    if (!selectedEventSlug) {
+      setEventItems([]);
+      return;
+    }
+
+    const fetchEventItems = async () => {
+      try {
+        const response: EventResponse = await getEventBySlug(selectedEventSlug);
+        setEventItems(
+          response.event_items.map((item) => ({
+            id: item.id,
+            eventId: response.id,
+            title: item.title,
+            time: formatSessionTime(new Date(item.time)),
+            room: item.location,
+            speakers: item.speakers || [],
+            status: item.cancelled ? "cancelled" : "",
+          })),
+        );
+        setError(null);
+      } catch (err) {
+        setError("Failed to load event items");
+        console.error(err);
+      }
+    };
+
+    fetchEventItems();
+  }, [selectedEventSlug]);
+
+  if (loading) {
+    return (
+      <section className="admin-tab-content">
+        <p
+          className="admin__muted"
+          style={{ textAlign: "center", padding: "2rem" }}
+        >
+          Loading events...
+        </p>
+      </section>
+    );
+  }
+
+  const filteredItems = eventItems;
 
   return (
     <section className="admin-tab-content">
@@ -35,29 +98,27 @@ export default function EventItemsTab({
           <label className="form__field" style={{ marginRight: "1rem" }}>
             <span>Select Event</span>
             <select
-              value={selectedEventId ?? ""}
-              onChange={(e) => setSelectedEventId(Number(e.target.value))}
+              value={selectedEventSlug ?? ""}
+              onChange={(e) => setSelectedEventSlug(e.target.value || null)}
             >
+              <option value="">Select event</option>
               {events.map((event) => (
-                <option key={event.id} value={event.id}>
+                <option key={event.id} value={event.slug}>
                   {event.title}
                 </option>
               ))}
             </select>
           </label>
-          {/* <button className="admin__button admin__button--ghost">
-            Import CSV
-          </button>
-          <button
-            className="admin__button admin__button--primary"
-            onClick={onNewItem}
-          >
-            New session
-          </button> */}
         </div>
       </div>
 
-      {!selectedEventId ? (
+      {error && (
+        <div className="admin__card" style={{ color: "red", padding: "1rem" }}>
+          <p>{error}</p>
+        </div>
+      )}
+
+      {!selectedEventSlug ? (
         <div className="admin__card">
           <p
             className="admin__muted"
@@ -70,15 +131,9 @@ export default function EventItemsTab({
         <>
           <div className="admin__grid">
             <div className="admin__card">
-              <p className="admin__eyebrow">Upcoming sessions</p>
-              <h3>
-                {
-                  filteredItems.filter((item) =>
-                    ["live", "up-next"].includes(item.status),
-                  ).length
-                }
-              </h3>
-              <p className="admin__muted">Items in the next rotation window.</p>
+              <p className="admin__eyebrow">Total sessions</p>
+              <h3>{filteredItems.length}</h3>
+              <p className="admin__muted">Sessions in this event.</p>
             </div>
             <div className="admin__card">
               <p className="admin__eyebrow">Draft changes</p>
@@ -118,13 +173,16 @@ export default function EventItemsTab({
                     <div>
                       <p className="admin__list-title">{item.title}</p>
                       <p className="admin__muted">
-                        {item.time} • {item.room} • {item.speaker}
+                        {[
+                          item.time,
+                          item.room || "",
+                          item.speakers.map((s) => s.name).join(", "),
+                        ]
+                          .filter(Boolean)
+                          .join(" • ")}
                       </p>
                     </div>
                     <div className="admin__list-meta">
-                      <span className="admin__pill" data-tone={item.status}>
-                        {item.status}
-                      </span>
                       <button
                         className="admin__button admin__button--ghost"
                         onClick={() => onEditItem(item)}

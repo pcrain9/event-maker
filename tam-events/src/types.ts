@@ -134,7 +134,11 @@ export type EventResponse = {
 };
 
 export type EventIdsResponse = {
-  event_ids: number[];
+  events: Array<{
+    id: number;
+    slug: string;
+    title: string;
+  }>;
 };
 
 // Authentication Types

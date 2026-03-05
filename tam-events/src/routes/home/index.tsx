@@ -12,6 +12,11 @@ import type {
 } from "../../types";
 import { getEventBySlug } from "../../api";
 import { useAuthStore } from "../../auth/store/authStore";
+import {
+  formatDayLabel,
+  formatDayDate,
+  formatSessionTime,
+} from "../../utils/date";
 
 const DEFAULT_TAB: HomeTab = "events";
 
@@ -172,15 +177,6 @@ const dummyEventItems: EventItem[] = [
     event_id: 1,
   },
 ];
-
-const formatDayLabel = (date: Date) =>
-  date.toLocaleDateString("en-US", { weekday: "long" });
-
-const formatDayDate = (date: Date) =>
-  date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-
-const formatSessionTime = (date: Date) =>
-  date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
 
 const getSessionStatus = (time: Date) => {
   const now = new Date();

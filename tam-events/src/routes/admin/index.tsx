@@ -195,8 +195,6 @@ export default function AdminRoute() {
         )}
         {tab === "eventItems" && (
           <EventItemsTab
-            events={events}
-            eventItems={eventItems}
             onEditItem={openEventItemModal}
             onNewItem={() => openEventItemModal()}
           />
