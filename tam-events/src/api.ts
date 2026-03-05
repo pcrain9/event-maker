@@ -1,5 +1,11 @@
 import axios, { AxiosError } from "axios";
-import type { EventIdsResponse, EventResponse, LoginResponse } from "./types";
+import type {
+  EventIdsResponse,
+  EventResponse,
+  LoginResponse,
+  EventItem,
+  EventItemUpdate,
+} from "./types";
 import type { AuthError } from "./auth/store/authStore";
 import { tokenStorage } from "./auth/storage";
 
@@ -133,6 +139,27 @@ export const getEventBySlug = async (slug: string): Promise<EventResponse> => {
 // =============================================================================
 // AUTHENTICATED API ENDPOINTS (Bearer token required)
 // =============================================================================
+
+/**
+ * Update an event item - ADMIN ONLY
+ *
+ * @param eventId - The ID of the parent event
+ * @param itemId - The ID of the event item to update
+ * @param data - Partial update data (all fields optional)
+ * @returns Updated event item
+ * @throws {AxiosError} 401 if unauthorized, 403 if not admin, 404 if not found
+ */
+export const updateEventItem = async (
+  eventId: number,
+  itemId: number,
+  data: EventItemUpdate,
+): Promise<EventItem> => {
+  const response = await authenticatedClient.put<EventItem>(
+    `/events/${eventId}/items/${itemId}`,
+    data,
+  );
+  return response.data;
+};
 
 // Future admin endpoints will use authenticatedClient
 // Example:

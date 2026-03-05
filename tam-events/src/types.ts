@@ -72,6 +72,18 @@ export type EventItem = {
   event_id: number;
 };
 
+export type EventItemUpdate = {
+  title?: string;
+  sponsor?: string | null;
+  time?: string;
+  speakers?: Speaker[] | null;
+  link?: string | null;
+  description?: string | null;
+  location?: string | null;
+  cancelled?: boolean | null;
+  slides?: string[] | null;
+};
+
 export type AdminTab = "events" | "eventItems" | "announcements";
 
 export type AdminEvent = {
