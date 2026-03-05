@@ -1,4 +1,4 @@
-import type { AdminTab } from "../../types";
+import type { AdminTab } from "../../../types";
 
 type AdminSidebarProps = {
   activeTab: AdminTab;

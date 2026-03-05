@@ -1,4 +1,4 @@
-import type { AdminAnnouncement } from "../../types";
+import type { AdminAnnouncement } from "../../../types";
 
 type AnnouncementsTabProps = {
   announcements: AdminAnnouncement[];

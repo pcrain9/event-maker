@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { getEvents, getEventBySlug } from "../../../api";
 import { formatSessionTime } from "../../../utils/date";
-import type { EventResponse } from "../../../types";
+import type { EventResponse, AdminEventItem } from "../../../types";
 
 type EventItemsTabProps = {
-  onEditItem: (item: any) => void;
+  onEditItem: (item: AdminEventItem) => void;
   onNewItem: () => void;
 };
 
@@ -12,8 +12,10 @@ export default function EventItemsTab({
   onEditItem,
   onNewItem,
 }: EventItemsTabProps) {
-  const [events, setEvents] = useState<any[]>([]);
-  const [eventItems, setEventItems] = useState<any[]>([]);
+  const [events, setEvents] = useState<
+    { id: number; slug: string; title: string }[]
+  >([]);
+  const [eventItems, setEventItems] = useState<AdminEventItem[]>([]);
   const [selectedEventSlug, setSelectedEventSlug] = useState<string | null>(
     null,
   );
@@ -51,13 +53,8 @@ export default function EventItemsTab({
         const response: EventResponse = await getEventBySlug(selectedEventSlug);
         setEventItems(
           response.event_items.map((item) => ({
-            id: item.id,
-            eventId: response.id,
-            title: item.title,
-            time: formatSessionTime(new Date(item.time)),
-            room: item.location,
-            speakers: item.speakers || [],
-            status: item.cancelled ? "cancelled" : "",
+            ...item,
+            event_id: response.id,
           })),
         );
         setError(null);
@@ -136,11 +133,9 @@ export default function EventItemsTab({
               <p className="admin__muted">Sessions in this event.</p>
             </div>
             <div className="admin__card">
-              <p className="admin__eyebrow">Draft changes</p>
-              <h3>
-                {filteredItems.filter((item) => item.status === "draft").length}
-              </h3>
-              <p className="admin__muted">Unpublished edits awaiting review.</p>
+              <p className="admin__eyebrow">Cancelled</p>
+              <h3>{filteredItems.filter((item) => item.cancelled).length}</h3>
+              <p className="admin__muted">Sessions marked as cancelled.</p>
             </div>
           </div>
 
@@ -174,9 +169,9 @@ export default function EventItemsTab({
                       <p className="admin__list-title">{item.title}</p>
                       <p className="admin__muted">
                         {[
-                          item.time,
-                          item.room || "",
-                          item.speakers.map((s) => s.name).join(", "),
+                          formatSessionTime(new Date(item.time)),
+                          item.location || "",
+                          item.speakers?.map((s) => s.name).join(", "),
                         ]
                           .filter(Boolean)
                           .join(" • ")}

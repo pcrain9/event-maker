@@ -70,42 +70,8 @@ export default function AdminRoute() {
 
   const eventItems: AdminEventItem[] = useMemo(
     () => [
-      {
-        id: 201,
-        eventId: 1,
-        title: "Welcome and opening remarks",
-        time: "9:00 AM",
-        room: "Main Hall",
-        speaker: "Dr. Naomi Wells",
-        status: "live",
-      },
-      {
-        id: 202,
-        eventId: 1,
-        title: "Designing for daily momentum",
-        time: "10:30 AM",
-        room: "Studio A",
-        speaker: "Tia Alvarez",
-        status: "up-next",
-      },
-      {
-        id: 203,
-        eventId: 1,
-        title: "Operational craft workshop",
-        time: "1:00 PM",
-        room: "Workshop B",
-        speaker: "Rohan Patel",
-        status: "later",
-      },
-      {
-        id: 301,
-        eventId: 2,
-        title: "Exhibit prep lab",
-        time: "9:30 AM",
-        room: "Lab 2",
-        speaker: "Mila Cheng",
-        status: "draft",
-      },
+      // Event items are now fetched from the backend in EventItemsTab
+      // This array is kept for type compatibility but unused
     ],
     [],
   );
@@ -212,6 +178,10 @@ export default function AdminRoute() {
         onClose={closeModal}
         selectedItem={selectedItem}
         events={events}
+        onSave={() => {
+          closeModal();
+          // Optionally refresh the event items list here
+        }}
       />
       <AnnouncementModal
         isOpen={activeModal === "announcement"}

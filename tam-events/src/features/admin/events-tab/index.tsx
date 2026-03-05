@@ -1,4 +1,4 @@
-import type { AdminEvent, AdminEventItem } from "../../types";
+import type { AdminEvent, AdminEventItem } from "../../../types";
 
 type EventsTabProps = {
   events: AdminEvent[];

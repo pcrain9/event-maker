@@ -97,12 +97,16 @@ export type AdminEvent = {
 
 export type AdminEventItem = {
   id: number;
-  eventId: number;
+  event_id: number;
   title: string;
+  sponsor?: string | null;
   time: string;
-  room: string;
-  speaker: string;
-  status: "live" | "up-next" | "later" | "draft";
+  speakers?: Speaker[] | null;
+  link?: string | null;
+  description?: string | null;
+  location?: string | null;
+  cancelled?: boolean | null;
+  slides?: string[] | null;
 };
 
 export type AdminAnnouncement = {
