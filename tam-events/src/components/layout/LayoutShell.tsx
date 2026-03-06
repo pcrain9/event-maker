@@ -20,15 +20,23 @@ export default function LayoutShell({
     [dismissedNoticeKeys, notices],
   );
 
+  const getNoticeIcon = (tone: string) => {
+    switch (tone) {
+      case "info":
+        return "ℹ";
+      case "success":
+        return "✓";
+      case "warning":
+        return "⚠";
+      case "danger":
+        return "✕";
+      default:
+        return "ℹ";
+    }
+  };
+
   return (
     <div className="layout">
-      <Banner
-        title={title}
-        subtitle={subtitle}
-        navItems={navItems}
-        heroImageUrl={heroImageUrl}
-      />
-
       {visibleNotices.length > 0 && (
         <section className="layout__notices" aria-live="polite">
           {visibleNotices.map((notice) => {
@@ -39,8 +47,14 @@ export default function LayoutShell({
                 className="layout__notice"
                 data-tone={notice.tone}
               >
-                <div className="layout__notice-header">
-                  <p className="layout__notice-title">{notice.title}</p>
+                <div className="layout__notice-content">
+                  <span className="layout__notice-icon" aria-hidden="true">
+                    {getNoticeIcon(notice.tone)}
+                  </span>
+                  <div className="layout__notice-text">
+                    <p className="layout__notice-title">{notice.title}</p>
+                    <p className="layout__notice-message">{notice.message}</p>
+                  </div>
                   <button
                     className="layout__notice-close"
                     type="button"
@@ -51,15 +65,21 @@ export default function LayoutShell({
                       )
                     }
                   >
-                    Close
+                    ✕
                   </button>
                 </div>
-                <p className="layout__notice-message">{notice.message}</p>
               </article>
             );
           })}
         </section>
       )}
+
+      <Banner
+        title={title}
+        subtitle={subtitle}
+        navItems={navItems}
+        heroImageUrl={heroImageUrl}
+      />
 
       <main className="layout__content">{children}</main>
 
