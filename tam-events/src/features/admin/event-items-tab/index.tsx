@@ -1,16 +1,22 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { getEvents, getEventBySlug } from "../../../api";
 import { formatSessionTime } from "../../../utils/date";
 import type { EventResponse, AdminEventItem } from "../../../types";
 
+export type EventItemsTabRef = {
+  refreshEventItems: () => Promise<void>;
+};
+
 type EventItemsTabProps = {
   onEditItem: (item: AdminEventItem) => void;
   onNewItem: () => void;
+  refreshRef?: (ref: EventItemsTabRef) => void;
 };
 
 export default function EventItemsTab({
   onEditItem,
   onNewItem,
+  refreshRef,
 }: EventItemsTabProps) {
   const [events, setEvents] = useState<
     { id: number; slug: string; title: string }[]
@@ -41,31 +47,39 @@ export default function EventItemsTab({
     fetchEvents();
   }, []);
 
-  // Fetch event items when selected event changes
-  useEffect(() => {
+  // Extract fetchEventItems as a reusable function
+  const fetchEventItems = useCallback(async () => {
     if (!selectedEventSlug) {
       setEventItems([]);
       return;
     }
 
-    const fetchEventItems = async () => {
-      try {
-        const response: EventResponse = await getEventBySlug(selectedEventSlug);
-        setEventItems(
-          response.event_items.map((item) => ({
-            ...item,
-            event_id: response.id,
-          })),
-        );
-        setError(null);
-      } catch (err) {
-        setError("Failed to load event items");
-        console.error(err);
-      }
-    };
-
-    fetchEventItems();
+    try {
+      const response: EventResponse = await getEventBySlug(selectedEventSlug);
+      setEventItems(
+        response.event_items.map((item) => ({
+          ...item,
+          event_id: response.id,
+        })),
+      );
+      setError(null);
+    } catch (err) {
+      setError("Failed to load event items");
+      console.error(err);
+    }
   }, [selectedEventSlug]);
+
+  // Expose fetchEventItems to parent component
+  useEffect(() => {
+    if (refreshRef) {
+      refreshRef({ refreshEventItems: fetchEventItems });
+    }
+  }, [fetchEventItems, refreshRef]);
+
+  // Fetch event items when selected event changes
+  useEffect(() => {
+    fetchEventItems();
+  }, [selectedEventSlug, fetchEventItems]);
 
   if (loading) {
     return (
@@ -86,14 +100,14 @@ export default function EventItemsTab({
     <section className="admin-tab-content">
       <div className="admin__panel-header">
         <div>
-          <h2>Event Items</h2>
+          <h2>Event items</h2>
           <p className="admin__muted">
             Manage sessions, speakers, and room assignments.
           </p>
         </div>
         <div className="admin__actions">
           <label className="form__field" style={{ marginRight: "1rem" }}>
-            <span>Select Event</span>
+            <span>Select event</span>
             <select
               value={selectedEventSlug ?? ""}
               onChange={(e) => setSelectedEventSlug(e.target.value || null)}
@@ -128,24 +142,19 @@ export default function EventItemsTab({
         <>
           <div className="admin__grid">
             <div className="admin__card">
-              <p className="admin__eyebrow">Total sessions</p>
+              <p className="admin__eyebrow">Total event items</p>
               <h3>{filteredItems.length}</h3>
-              <p className="admin__muted">Sessions in this event.</p>
             </div>
             <div className="admin__card">
-              <p className="admin__eyebrow">Cancelled</p>
+              <p className="admin__eyebrow">Cancelled event items</p>
               <h3>{filteredItems.filter((item) => item.cancelled).length}</h3>
-              <p className="admin__muted">Sessions marked as cancelled.</p>
             </div>
           </div>
 
           <div className="admin__card">
             <div className="admin__card-header">
               <div>
-                <h3>Session list</h3>
-                <p className="admin__muted">
-                  Current agenda rows and presenters.
-                </p>
+                <h3>Event item list</h3>
               </div>
               <button
                 className="admin__button admin__button--ghost"

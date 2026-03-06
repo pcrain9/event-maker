@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { updateEventItem } from "../../../api";
+import { useToastStore } from "../../../components/toast/store/toastStore";
 import type { AdminEvent, AdminEventItem, Speaker } from "../../../types";
 import type { EventItemUpdate } from "../../../types";
 
@@ -18,6 +19,9 @@ export default function EventItemModal({
   events,
   onSave,
 }: EventItemModalProps) {
+  // Toast store
+  const addToast = useToastStore((state) => state.addToast);
+
   // Form state
   const [formData, setFormData] = useState<EventItemUpdate>({});
   const [loading, setLoading] = useState(false);
@@ -75,16 +79,50 @@ export default function EventItemModal({
     }));
   };
 
+  const handleAddSpeaker = () => {
+    const newSpeaker: Speaker = {
+      name: "",
+      headshot: "",
+      institution: "",
+    };
+    const currentSpeakers = (formData.speakers as Speaker[] | undefined) || [];
+    handleInputChange("speakers", [...currentSpeakers, newSpeaker]);
+  };
+
+  const handleUpdateSpeaker = (
+    index: number,
+    field: keyof Speaker,
+    value: string,
+  ) => {
+    const currentSpeakers = (formData.speakers as Speaker[] | undefined) || [];
+    const updatedSpeakers = [...currentSpeakers];
+    updatedSpeakers[index] = {
+      ...updatedSpeakers[index],
+      [field]: value,
+    };
+    handleInputChange("speakers", updatedSpeakers);
+  };
+
+  const handleDeleteSpeaker = (index: number) => {
+    const currentSpeakers = (formData.speakers as Speaker[] | undefined) || [];
+    const updatedSpeakers = currentSpeakers.filter((_, i) => i !== index);
+    handleInputChange("speakers", updatedSpeakers);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!selectedItem) {
-      setError("No event item selected");
+      const errorMsg = "No event item selected";
+      setError(errorMsg);
+      addToast({ type: "error", message: errorMsg });
       return;
     }
 
     if (!formData.title?.trim()) {
-      setError("Title is required");
+      const errorMsg = "Title is required";
+      setError(errorMsg);
+      addToast({ type: "error", message: errorMsg });
       return;
     }
 
@@ -97,6 +135,12 @@ export default function EventItemModal({
 
       // Call the API to update the item
       await updateEventItem(eventId, itemId, formData);
+
+      // Show success toast
+      addToast({
+        type: "success",
+        message: `"${formData.title}" updated successfully`,
+      });
 
       // Notify parent component of successful save
       if (onSave) {
@@ -111,6 +155,10 @@ export default function EventItemModal({
       const message =
         err instanceof Error ? err.message : "Failed to save event item";
       setError(message);
+      addToast({
+        type: "error",
+        message: message,
+      });
       console.error("Save error:", err);
     } finally {
       setLoading(false);
@@ -135,21 +183,6 @@ export default function EventItemModal({
           </button>
         </div>
         <div className="modal__body">
-          {error && (
-            <div
-              style={{
-                padding: "1rem",
-                marginBottom: "1rem",
-                backgroundColor: "#fee",
-                border: "1px solid #f99",
-                borderRadius: "4px",
-                color: "#c00",
-              }}
-            >
-              {error}
-            </div>
-          )}
-
           <form className="form" onSubmit={handleSubmit}>
             <label className="form__field">
               <span>Session title</span>
@@ -261,30 +294,154 @@ export default function EventItemModal({
             <div className="form__field">
               <span>Speakers</span>
               <p className="admin__muted" style={{ fontSize: "0.85rem" }}>
-                Current speakers:{" "}
+                Total speakers:{" "}
                 {(formData.speakers as Speaker[] | undefined)?.length ?? 0}
               </p>
-              {(formData.speakers as Speaker[] | undefined)?.map(
-                (speaker, idx) => (
-                  <div
-                    key={idx}
-                    style={{
-                      padding: "0.75rem",
-                      backgroundColor: "#f5f5f5",
-                      borderRadius: "4px",
-                      marginBottom: "0.5rem",
-                    }}
-                  >
-                    <p style={{ margin: 0, fontWeight: 500 }}>{speaker.name}</p>
-                    <p style={{ margin: "0.25rem 0 0 0", fontSize: "0.85rem" }}>
-                      {speaker.institution}
-                    </p>
-                  </div>
-                ),
+
+              {/* Speakers List */}
+              {((formData.speakers as Speaker[] | undefined)?.length ??
+              0 > 0) ? (
+                <div style={{ marginBottom: "1rem" }}>
+                  {(formData.speakers as Speaker[]).map((speaker, idx) => (
+                    <div
+                      key={idx}
+                      style={{
+                        padding: "0.75rem",
+                        backgroundColor: "#f9f9f9",
+                        borderRadius: "4px",
+                        marginBottom: "0.75rem",
+                        border: "1px solid #e0e0e0",
+                      }}
+                    >
+                      <div style={{ marginBottom: "0.5rem" }}>
+                        <label
+                          style={{
+                            fontSize: "0.75rem",
+                            display: "block",
+                            marginBottom: "0.25rem",
+                          }}
+                        >
+                          Speaker name
+                        </label>
+                        <input
+                          type="text"
+                          value={speaker.name}
+                          onChange={(e) =>
+                            handleUpdateSpeaker(idx, "name", e.target.value)
+                          }
+                          placeholder="John Doe"
+                          disabled={loading}
+                          style={{
+                            width: "100%",
+                            padding: "0.5rem",
+                            marginBottom: "0.5rem",
+                          }}
+                        />
+                      </div>
+
+                      <div style={{ marginBottom: "0.5rem" }}>
+                        <label
+                          style={{
+                            fontSize: "0.75rem",
+                            display: "block",
+                            marginBottom: "0.25rem",
+                          }}
+                        >
+                          Institution
+                        </label>
+                        <input
+                          type="text"
+                          value={speaker.institution}
+                          onChange={(e) =>
+                            handleUpdateSpeaker(
+                              idx,
+                              "institution",
+                              e.target.value,
+                            )
+                          }
+                          placeholder="University/Company Name"
+                          disabled={loading}
+                          style={{
+                            width: "100%",
+                            padding: "0.5rem",
+                            marginBottom: "0.5rem",
+                          }}
+                        />
+                      </div>
+
+                      <div style={{ marginBottom: "0.5rem" }}>
+                        <label
+                          style={{
+                            fontSize: "0.75rem",
+                            display: "block",
+                            marginBottom: "0.25rem",
+                          }}
+                        >
+                          Headshot URL
+                        </label>
+                        <input
+                          type="text"
+                          value={speaker.headshot}
+                          onChange={(e) =>
+                            handleUpdateSpeaker(idx, "headshot", e.target.value)
+                          }
+                          placeholder="https://example.com/image.jpg"
+                          disabled={loading}
+                          style={{
+                            width: "100%",
+                            padding: "0.5rem",
+                            marginBottom: "0.5rem",
+                          }}
+                        />
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteSpeaker(idx)}
+                        disabled={loading}
+                        style={{
+                          backgroundColor: "#fee2e2",
+                          color: "#dc2626",
+                          border: "none",
+                          padding: "0.4rem 0.8rem",
+                          borderRadius: "4px",
+                          cursor: "pointer",
+                          fontSize: "0.85rem",
+                          fontWeight: 500,
+                        }}
+                      >
+                        Delete speaker
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p
+                  className="admin__muted"
+                  style={{ fontSize: "0.85rem", marginBottom: "1rem" }}
+                >
+                  No speakers added yet
+                </p>
               )}
-              <p className="admin__muted" style={{ fontSize: "0.75rem" }}>
-                Speaker management coming soon
-              </p>
+
+              {/* Add Speaker Button */}
+              <button
+                type="button"
+                onClick={handleAddSpeaker}
+                disabled={loading}
+                style={{
+                  backgroundColor: "#dbeafe",
+                  color: "#2563eb",
+                  border: "1px solid #93c5fd",
+                  padding: "0.5rem 1rem",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                  fontSize: "0.85rem",
+                  fontWeight: 500,
+                }}
+              >
+                + Add speaker
+              </button>
             </div>
           </form>
         </div>

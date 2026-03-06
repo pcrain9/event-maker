@@ -1,10 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuthStore } from "../../auth/store/authStore";
 import AdminLayout from "../../features/admin/admin-layout";
 import AnnouncementsTab from "../../features/admin/announcements-tab";
 import AnnouncementModal from "../../features/admin/announcement-modal";
-import EventItemsTab from "../../features/admin/event-items-tab";
+import EventItemsTab, {
+  type EventItemsTabRef,
+} from "../../features/admin/event-items-tab";
 import EventItemModal from "../../features/admin/event-item-modal";
 import EventsTab from "../../features/admin/events-tab";
 import type {
@@ -37,6 +39,7 @@ export default function AdminRoute() {
     "event-item" | "announcement" | null
   >(null);
   const [selectedItem, setSelectedItem] = useState<AdminEventItem | null>(null);
+  const eventItemsTabRef = useRef<EventItemsTabRef>(null);
 
   const events: AdminEvent[] = useMemo(
     () => [
@@ -163,6 +166,9 @@ export default function AdminRoute() {
           <EventItemsTab
             onEditItem={openEventItemModal}
             onNewItem={() => openEventItemModal()}
+            refreshRef={(ref) => {
+              eventItemsTabRef.current = ref;
+            }}
           />
         )}
         {tab === "announcements" && (
@@ -180,7 +186,9 @@ export default function AdminRoute() {
         events={events}
         onSave={() => {
           closeModal();
-          // Optionally refresh the event items list here
+
+          // Refresh the event items list after saving
+          eventItemsTabRef.current?.refreshEventItems();
         }}
       />
       <AnnouncementModal

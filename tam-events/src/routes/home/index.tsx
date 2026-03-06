@@ -308,8 +308,7 @@ export default function HomeRoute() {
         console.error("Failed to load event items:", error);
         setLoadError("Unable to load event data right now.");
       } finally {
-        if (!isMounted) return;
-        setIsLoading(false);
+        if (isMounted) setIsLoading(false);
       }
     };
 

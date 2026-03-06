@@ -83,8 +83,8 @@ async def get_event_with_items(slug: str, db: AsyncSession) -> EventItemResponse
     # Use default color scheme if not set
     color_scheme = ColorScheme(**event.color_scheme) if event.color_scheme else DEFAULT_COLOR_SCHEME
     
-    # Query event items
-    items_query = select(Event_Item).where(Event_Item.event_id == event_id_val)
+    # Query event items ordered by time (chronological)
+    items_query = select(Event_Item).where(Event_Item.event_id == event_id_val).order_by(Event_Item.time)
     items_result = await db.execute(items_query)
     event_items = items_result.scalars().all()
     
