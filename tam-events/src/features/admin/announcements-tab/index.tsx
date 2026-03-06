@@ -1,4 +1,5 @@
-import type { AdminAnnouncement } from "../../types";
+import type { AdminAnnouncement } from "../../../types";
+import { useToast } from "../../../components/toast";
 
 type AnnouncementsTabProps = {
   announcements: AdminAnnouncement[];
@@ -9,6 +10,8 @@ export default function AnnouncementsTab({
   announcements,
   onNewAnnouncement,
 }: AnnouncementsTabProps) {
+  const toast = useToast();
+
   return (
     <section className="admin-tab-content">
       <div className="admin__panel-header">
@@ -40,10 +43,18 @@ export default function AnnouncementsTab({
                 {announcement.starts} → {announcement.ends}
               </span>
               <div className="admin__actions">
-                <button className="admin__button admin__button--ghost">
+                <button
+                  className="admin__button admin__button--ghost"
+                  onClick={() =>
+                    toast.success(`Duplicated "${announcement.title}"`)
+                  }
+                >
                   Duplicate
                 </button>
-                <button className="admin__button admin__button--ghost">
+                <button
+                  className="admin__button admin__button--ghost"
+                  onClick={() => toast.info(`Editing "${announcement.title}"`)}
+                >
                   Edit
                 </button>
               </div>

@@ -10,6 +10,23 @@ class ColorScheme(BaseModel):
     alt_background: str
     text: str
     title_text: str
+
+class EventSummary(BaseModel):
+    """Schema for event summary in list responses."""
+    id: int
+    slug: str
+    title: str
+
+    class Config:
+        from_attributes = True
+
+class EventsListResponse(BaseModel):
+    """Schema for list of events response."""
+    events: list[EventSummary]
+
+    class Config:
+        from_attributes = True
+
 class EventItemDetail(BaseModel):
     """Schema for individual event item data."""
     id: int

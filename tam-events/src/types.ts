@@ -72,6 +72,18 @@ export type EventItem = {
   event_id: number;
 };
 
+export type EventItemUpdate = {
+  title?: string;
+  sponsor?: string | null;
+  time?: string;
+  speakers?: Speaker[] | null;
+  link?: string | null;
+  description?: string | null;
+  location?: string | null;
+  cancelled?: boolean | null;
+  slides?: string[] | null;
+};
+
 export type AdminTab = "events" | "eventItems" | "announcements";
 
 export type AdminEvent = {
@@ -85,12 +97,16 @@ export type AdminEvent = {
 
 export type AdminEventItem = {
   id: number;
-  eventId: number;
+  event_id: number;
   title: string;
+  sponsor?: string | null;
   time: string;
-  room: string;
-  speaker: string;
-  status: "live" | "up-next" | "later" | "draft";
+  speakers?: Speaker[] | null;
+  link?: string | null;
+  description?: string | null;
+  location?: string | null;
+  cancelled?: boolean | null;
+  slides?: string[] | null;
 };
 
 export type AdminAnnouncement = {
@@ -122,7 +138,11 @@ export type EventResponse = {
 };
 
 export type EventIdsResponse = {
-  event_ids: number[];
+  events: Array<{
+    id: number;
+    slug: string;
+    title: string;
+  }>;
 };
 
 // Authentication Types

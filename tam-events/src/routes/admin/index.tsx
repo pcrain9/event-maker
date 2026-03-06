@@ -1,12 +1,14 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuthStore } from "../../auth/store/authStore";
-import AdminLayout from "../../features/admin/AdminLayout";
-import AnnouncementsTab from "../../features/admin/AnnouncementsTab";
-import AnnouncementModal from "../../features/admin/AnnouncementModal";
-import EventItemsTab from "../../features/admin/EventItemsTab";
-import EventItemModal from "../../features/admin/EventItemModal";
-import EventsTab from "../../features/admin/EventsTab";
+import AdminLayout from "../../features/admin/admin-layout";
+import AnnouncementsTab from "../../features/admin/announcements-tab";
+import AnnouncementModal from "../../features/admin/announcement-modal";
+import EventItemsTab, {
+  type EventItemsTabRef,
+} from "../../features/admin/event-items-tab";
+import EventItemModal from "../../features/admin/event-item-modal";
+import EventsTab from "../../features/admin/events-tab";
 import type {
   AdminAnnouncement,
   AdminEvent,
@@ -37,6 +39,7 @@ export default function AdminRoute() {
     "event-item" | "announcement" | null
   >(null);
   const [selectedItem, setSelectedItem] = useState<AdminEventItem | null>(null);
+  const eventItemsTabRef = useRef<EventItemsTabRef>(null);
 
   const events: AdminEvent[] = useMemo(
     () => [
@@ -70,42 +73,8 @@ export default function AdminRoute() {
 
   const eventItems: AdminEventItem[] = useMemo(
     () => [
-      {
-        id: 201,
-        eventId: 1,
-        title: "Welcome and opening remarks",
-        time: "9:00 AM",
-        room: "Main Hall",
-        speaker: "Dr. Naomi Wells",
-        status: "live",
-      },
-      {
-        id: 202,
-        eventId: 1,
-        title: "Designing for daily momentum",
-        time: "10:30 AM",
-        room: "Studio A",
-        speaker: "Tia Alvarez",
-        status: "up-next",
-      },
-      {
-        id: 203,
-        eventId: 1,
-        title: "Operational craft workshop",
-        time: "1:00 PM",
-        room: "Workshop B",
-        speaker: "Rohan Patel",
-        status: "later",
-      },
-      {
-        id: 301,
-        eventId: 2,
-        title: "Exhibit prep lab",
-        time: "9:30 AM",
-        room: "Lab 2",
-        speaker: "Mila Cheng",
-        status: "draft",
-      },
+      // Event items are now fetched from the backend in EventItemsTab
+      // This array is kept for type compatibility but unused
     ],
     [],
   );
@@ -195,9 +164,11 @@ export default function AdminRoute() {
         )}
         {tab === "eventItems" && (
           <EventItemsTab
-            eventItems={eventItems}
             onEditItem={openEventItemModal}
             onNewItem={() => openEventItemModal()}
+            refreshRef={(ref) => {
+              eventItemsTabRef.current = ref;
+            }}
           />
         )}
         {tab === "announcements" && (
@@ -213,6 +184,12 @@ export default function AdminRoute() {
         onClose={closeModal}
         selectedItem={selectedItem}
         events={events}
+        onSave={() => {
+          closeModal();
+
+          // Refresh the event items list after saving
+          eventItemsTabRef.current?.refreshEventItems();
+        }}
       />
       <AnnouncementModal
         isOpen={activeModal === "announcement"}

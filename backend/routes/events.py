@@ -5,24 +5,27 @@ from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 
 from backend.db import get_db
-from backend.schema.event_item import GetEventItemsRequest, EventItemResponse, EventItemUpdate, EventItemDetail
+from backend.schema.event_item import (
+    GetEventItemsRequest, EventItemResponse, EventItemUpdate, 
+    EventItemDetail, EventsListResponse, EventSummary
+)
 from backend.models.event_item import Event_Item
 from backend.models.user import User
-from backend.services.events import get_event_with_items, get_event_ids
+from backend.services.events import get_event_with_items, get_all_events
 from backend.services.event_items import update_event_item
 from backend.core.auth import require_admin
 
 router = APIRouter(prefix="/events", tags=["events"])
 
 @router.get("/")
-async def get_event_ids_route(db: AsyncSession = Depends(get_db)):
-    """Fetch all event IDs."""
-    result = await get_event_ids(db)
+async def get_all_events_route(db: AsyncSession = Depends(get_db)):
+    """Fetch all events with basic info."""
+    events = await get_all_events(db)
     
-    if result is None:
+    if not events:
         raise HTTPException(status_code=404, detail="No events found")
     
-    return result
+    return {"events": events}
 
 @router.get("/{slug}")
 async def get_events(slug: str, db: AsyncSession = Depends(get_db)):

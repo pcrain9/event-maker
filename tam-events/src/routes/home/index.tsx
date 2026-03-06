@@ -12,6 +12,11 @@ import type {
 } from "../../types";
 import { getEventBySlug } from "../../api";
 import { useAuthStore } from "../../auth/store/authStore";
+import {
+  formatDayLabel,
+  formatDayDate,
+  formatSessionTime,
+} from "../../utils/date";
 
 const DEFAULT_TAB: HomeTab = "events";
 
@@ -173,15 +178,6 @@ const dummyEventItems: EventItem[] = [
   },
 ];
 
-const formatDayLabel = (date: Date) =>
-  date.toLocaleDateString("en-US", { weekday: "long" });
-
-const formatDayDate = (date: Date) =>
-  date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-
-const formatSessionTime = (date: Date) =>
-  date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
-
 const getSessionStatus = (time: Date) => {
   const now = new Date();
   const diffMs = time.getTime() - now.getTime();
@@ -312,8 +308,7 @@ export default function HomeRoute() {
         console.error("Failed to load event items:", error);
         setLoadError("Unable to load event data right now.");
       } finally {
-        if (!isMounted) return;
-        setIsLoading(false);
+        if (isMounted) setIsLoading(false);
       }
     };
 
