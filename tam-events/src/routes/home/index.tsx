@@ -273,7 +273,7 @@ export default function HomeRoute() {
   ];
   const notices = [
     {
-      tone: "info" as const,
+      tone: "danger" as const,
       title: "Check-in opens at 8:00 AM",
       message: "Stop by the welcome desk for your badge and day-one guide.",
     },
