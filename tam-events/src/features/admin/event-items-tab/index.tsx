@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { getEvents, getEventBySlug } from "../../../api";
+import { getEventBySlug } from "../../../api";
 import { formatSessionTime } from "../../../utils/date";
 import type { EventResponse, AdminEventItem } from "../../../types";
 
@@ -8,44 +8,23 @@ export type EventItemsTabRef = {
 };
 
 type EventItemsTabProps = {
+  events: Array<{ id: number; slug: string; title: string }>;
   onEditItem: (item: AdminEventItem) => void;
   onNewItem: () => void;
   refreshRef?: (ref: EventItemsTabRef) => void;
 };
 
 export default function EventItemsTab({
+  events,
   onEditItem,
   onNewItem,
   refreshRef,
 }: EventItemsTabProps) {
-  const [events, setEvents] = useState<
-    { id: number; slug: string; title: string }[]
-  >([]);
   const [eventItems, setEventItems] = useState<AdminEventItem[]>([]);
   const [selectedEventSlug, setSelectedEventSlug] = useState<string | null>(
     null,
   );
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  // Fetch all events on mount
-  useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        setLoading(true);
-        const response = await getEvents();
-        setEvents(response.events);
-        setError(null);
-      } catch (err) {
-        setError("Failed to load events");
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchEvents();
-  }, []);
 
   // Extract fetchEventItems as a reusable function
   const fetchEventItems = useCallback(async () => {
@@ -78,21 +57,11 @@ export default function EventItemsTab({
 
   // Fetch event items when selected event changes
   useEffect(() => {
-    fetchEventItems();
+    const fetchItems = async () => {
+      await fetchEventItems();
+    };
+    fetchItems();
   }, [selectedEventSlug, fetchEventItems]);
-
-  if (loading) {
-    return (
-      <section className="admin-tab-content">
-        <p
-          className="admin__muted"
-          style={{ textAlign: "center", padding: "2rem" }}
-        >
-          Loading events...
-        </p>
-      </section>
-    );
-  }
 
   const filteredItems = eventItems;
 

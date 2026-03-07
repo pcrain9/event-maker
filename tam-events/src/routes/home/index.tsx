@@ -9,8 +9,10 @@ import type {
   HomeTab,
   ScheduleDay,
   ThemeColors,
+  LayoutNotice,
+  AdminAnnouncement,
 } from "../../types";
-import { getEventBySlug } from "../../api";
+import { getEventBySlug, getAnnouncementsByEvent } from "../../api";
 import { useAuthStore } from "../../auth/store/authStore";
 import {
   formatDayLabel,
@@ -261,6 +263,7 @@ export default function HomeRoute() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const tab = normalizeHomeTab(searchParams.get("tab"));
   const [eventData, setEventData] = useState<EventResponse | null>(null);
+  const [announcements, setAnnouncements] = useState<AdminAnnouncement[]>([]);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const scheduleDays = useMemo(
@@ -271,13 +274,24 @@ export default function HomeRoute() {
     { label: "Events", href: "?tab=events", isActive: tab === "events" },
     { label: "Sponsors", href: "?tab=sponsors", isActive: tab === "sponsors" },
   ];
-  const notices = [
-    {
-      tone: "danger" as const,
-      title: "Check-in opens at 8:00 AM",
-      message: "Stop by the welcome desk for your badge and day-one guide.",
-    },
-  ];
+
+  // Convert announcements to notices format and filter by active date range
+  const notices: LayoutNotice[] = useMemo(() => {
+    const now = new Date();
+    return announcements
+      .filter((announcement) => {
+        const starts = new Date(announcement.starts);
+        const ends = new Date(announcement.ends);
+        return now >= starts && now <= ends;
+      })
+      .map((announcement) => ({
+        id: announcement.id,
+        tone: announcement.tone,
+        title: announcement.title,
+        message: announcement.body,
+        ends: announcement.ends,
+      }));
+  }, [announcements]);
 
   useEffect(() => {
     const current = searchParams.get("tab");
@@ -302,6 +316,18 @@ export default function HomeRoute() {
         if (!isMounted) return;
         setEventData(data);
         applyColorScheme(data.color_scheme);
+
+        // Fetch announcements for this event
+        try {
+          const eventAnnouncements = await getAnnouncementsByEvent(data.id);
+          if (isMounted) {
+            setAnnouncements(eventAnnouncements);
+          }
+        } catch (announcementError) {
+          console.error("Failed to load announcements:", announcementError);
+          // Don't fail the whole page if announcements fail
+        }
+
         setLoadError(null);
       } catch (error) {
         if (!isMounted) return;

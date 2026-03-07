@@ -15,3 +15,9 @@ export const formatDayLabel = (date: Date): string =>
  */
 export const formatDayDate = (date: Date): string =>
   date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+
+/**
+ * Format a date as a short date-time string (e.g., "Feb 7, 9:00 AM")
+ */
+export const formatShortDateTime = (date: Date): string =>
+  `${date.toLocaleDateString("en-US", { month: "short", day: "numeric" })}, ${formatSessionTime(date)}`;

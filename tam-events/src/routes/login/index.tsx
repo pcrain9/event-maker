@@ -56,7 +56,6 @@ export default function LoginRoute() {
       <section className="login">
         <div className="login__panel">
           <div className="login__header">
-            <p className="login__eyebrow">Festival Ops</p>
             <h2>Welcome back</h2>
             <p className="login__subtext">
               Use your staff credentials to keep the TAM Events schedule current
