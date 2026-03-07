@@ -5,6 +5,7 @@ from ..db import Base
 
 if TYPE_CHECKING:
     from .event_item import Event_Item
+    from .announcement import Announcement
 
 
 class Event(Base):
@@ -18,6 +19,9 @@ class Event(Base):
     
     # Relationship to Event_Item
     items: Mapped[list["Event_Item"]] = relationship("Event_Item", back_populates="event")
+    
+    # Relationship to Announcement
+    announcements: Mapped[list["Announcement"]] = relationship("Announcement", back_populates="event")
 
     def __repr__(self) -> str:  # pragma: no cover - tiny helper
         return f"<Event id={self.id}>"

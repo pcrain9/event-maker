@@ -17,6 +17,8 @@ export type LayoutNotice = {
   tone: "info" | "success" | "warning" | "danger";
   title: string;
   message: string;
+  id?: number;
+  ends?: string;
 };
 
 export type LayoutShellProps = {
@@ -116,6 +118,25 @@ export type AdminAnnouncement = {
   tone: "info" | "success" | "warning" | "danger";
   starts: string;
   ends: string;
+  event_id: number;
+  created_at: string;
+};
+
+export type AnnouncementCreate = {
+  title: string;
+  body: string;
+  tone: "info" | "success" | "warning" | "danger";
+  starts: string;
+  ends: string;
+  event_id: number;
+};
+
+export type AnnouncementUpdate = {
+  title?: string;
+  body?: string;
+  tone?: "info" | "success" | "warning" | "danger";
+  starts?: string;
+  ends?: string;
 };
 
 export type ThemeColors = {

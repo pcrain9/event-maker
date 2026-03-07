@@ -9,10 +9,11 @@ import EventItemsTab, {
 } from "../../features/admin/event-items-tab";
 import EventItemModal from "../../features/admin/event-item-modal";
 import EventsTab from "../../features/admin/events-tab";
+import { getEvents } from "../../api";
 import type {
-  AdminAnnouncement,
   AdminEvent,
   AdminEventItem,
+  AdminAnnouncement,
   AdminTab,
 } from "../../types";
 
@@ -39,7 +40,15 @@ export default function AdminRoute() {
     "event-item" | "announcement" | null
   >(null);
   const [selectedItem, setSelectedItem] = useState<AdminEventItem | null>(null);
+  const [selectedAnnouncement, setSelectedAnnouncement] =
+    useState<AdminAnnouncement | null>(null);
+  const [announcementsRefreshKey, setAnnouncementsRefreshKey] = useState(0);
   const eventItemsTabRef = useRef<EventItemsTabRef>(null);
+
+  // Fetch event slugs from API
+  const [eventSlugs, setEventSlugs] = useState<
+    Array<{ id: number; slug: string; title: string }>
+  >([]);
 
   const events: AdminEvent[] = useMemo(
     () => [
@@ -79,27 +88,20 @@ export default function AdminRoute() {
     [],
   );
 
-  const announcements: AdminAnnouncement[] = useMemo(
-    () => [
-      {
-        id: 1,
-        title: "Badge pickup moved",
-        body: "Registration is now at Ballroom B. Doors open at 7:30 AM.",
-        tone: "warning",
-        starts: "Feb 7, 7:00 AM",
-        ends: "Feb 7, 11:00 AM",
-      },
-      {
-        id: 2,
-        title: "Shuttle standby",
-        body: "Afternoon shuttles pause at 4:30 PM. Plan early exits.",
-        tone: "info",
-        starts: "Feb 7, 2:00 PM",
-        ends: "Feb 7, 6:00 PM",
-      },
-    ],
-    [],
-  );
+  // Fetch event slugs on component mount
+  useEffect(() => {
+    const fetchEventSlugs = async () => {
+      try {
+        const response = await getEvents();
+        setEventSlugs(response.events);
+      } catch (error) {
+        console.error("Failed to fetch event slugs:", error);
+        setEventSlugs([]);
+      }
+    };
+
+    fetchEventSlugs();
+  }, []);
 
   useEffect(() => {
     const current = searchParams.get("tab");
@@ -117,6 +119,7 @@ export default function AdminRoute() {
       if (event.key === "Escape") {
         setActiveModal(null);
         setSelectedItem(null);
+        setSelectedAnnouncement(null);
       }
     };
 
@@ -135,14 +138,15 @@ export default function AdminRoute() {
     setActiveModal("event-item");
   };
 
-  const openAnnouncementModal = () => {
-    setSelectedItem(null);
+  const openAnnouncementModal = (announcement?: AdminAnnouncement) => {
+    setSelectedAnnouncement(announcement ?? null);
     setActiveModal("announcement");
   };
 
   const closeModal = () => {
     setActiveModal(null);
     setSelectedItem(null);
+    setSelectedAnnouncement(null);
   };
 
   const handleLogout = () => {
@@ -164,6 +168,7 @@ export default function AdminRoute() {
         )}
         {tab === "eventItems" && (
           <EventItemsTab
+            events={eventSlugs}
             onEditItem={openEventItemModal}
             onNewItem={() => openEventItemModal()}
             refreshRef={(ref) => {
@@ -173,8 +178,12 @@ export default function AdminRoute() {
         )}
         {tab === "announcements" && (
           <AnnouncementsTab
-            announcements={announcements}
-            onNewAnnouncement={openAnnouncementModal}
+            onNewAnnouncement={() => openAnnouncementModal()}
+            onEditAnnouncement={(announcement) =>
+              openAnnouncementModal(announcement)
+            }
+            eventSlugs={eventSlugs}
+            refreshKey={announcementsRefreshKey}
           />
         )}
       </AdminLayout>
@@ -194,6 +203,11 @@ export default function AdminRoute() {
       <AnnouncementModal
         isOpen={activeModal === "announcement"}
         onClose={closeModal}
+        events={eventSlugs}
+        selectedAnnouncement={selectedAnnouncement}
+        onSave={() => {
+          setAnnouncementsRefreshKey((current) => current + 1);
+        }}
       />
     </>
   );

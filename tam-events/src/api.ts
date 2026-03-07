@@ -5,6 +5,9 @@ import type {
   LoginResponse,
   EventItem,
   EventItemUpdate,
+  AdminAnnouncement,
+  AnnouncementCreate,
+  AnnouncementUpdate,
 } from "./types";
 import type { AuthError } from "./auth/store/authStore";
 import { tokenStorage } from "./auth/storage";
@@ -136,10 +139,6 @@ export const getEventBySlug = async (slug: string): Promise<EventResponse> => {
   return response.data;
 };
 
-// =============================================================================
-// AUTHENTICATED API ENDPOINTS (Bearer token required)
-// =============================================================================
-
 /**
  * Update an event item - ADMIN ONLY
  *
@@ -161,9 +160,69 @@ export const updateEventItem = async (
   return response.data;
 };
 
-// Future admin endpoints will use authenticatedClient
-// Example:
-// export const updateEvent = async (id: number, data: EventUpdate) => {
-//   const response = await authenticatedClient.put(`/events/${id}`, data);
-//   return response.data;
-// };
+/**
+ * Fetch all announcements for a specific event - PUBLIC
+ *
+ * @param eventId - The ID of the event to fetch announcements for
+ * @returns Array of announcements for the event
+ * @throws {AxiosError} 404 if event not found
+ */
+export const getAnnouncementsByEvent = async (
+  eventId: number,
+): Promise<AdminAnnouncement[]> => {
+  const response = await publicClient.get<AdminAnnouncement[]>(
+    `/announcements/`,
+    {
+      params: { event_id: eventId },
+    },
+  );
+  return response.data;
+};
+
+/**
+ * Create a new announcement - ADMIN ONLY
+ *
+ * @param data - The announcement data to create
+ * @returns The created announcement
+ * @throws {AxiosError} 401 if unauthorized, 403 if not admin
+ */
+export const createAnnouncement = async (
+  data: AnnouncementCreate,
+): Promise<AdminAnnouncement> => {
+  const response = await authenticatedClient.post<AdminAnnouncement>(
+    `/announcements/`,
+    data,
+  );
+  return response.data;
+};
+
+/**
+ * Update an announcement - ADMIN ONLY
+ *
+ * @param announcementId - The ID of the announcement to update
+ * @param data - Partial update data (all fields optional)
+ * @returns The updated announcement
+ * @throws {AxiosError} 401 if unauthorized, 403 if not admin, 404 if not found
+ */
+export const updateAnnouncement = async (
+  announcementId: number,
+  data: AnnouncementUpdate,
+): Promise<AdminAnnouncement> => {
+  const response = await authenticatedClient.put<AdminAnnouncement>(
+    `/announcements/${announcementId}`,
+    data,
+  );
+  return response.data;
+};
+
+/**
+ * Delete an announcement - ADMIN ONLY
+ *
+ * @param announcementId - The ID of the announcement to delete
+ * @throws {AxiosError} 401 if unauthorized, 403 if not admin, 404 if not found
+ */
+export const deleteAnnouncement = async (
+  announcementId: number,
+): Promise<void> => {
+  await authenticatedClient.delete(`/announcements/${announcementId}`);
+};
