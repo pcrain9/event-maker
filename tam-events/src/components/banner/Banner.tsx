@@ -6,6 +6,7 @@ export default function Banner({
   subtitle,
   navItems = [],
   heroImageUrl,
+  heroAction,
 }: BannerProps) {
   return (
     <header className="layout__hero">
@@ -15,6 +16,9 @@ export default function Banner({
           style={{ backgroundImage: `url(${heroImageUrl})` }}
           aria-hidden="true"
         />
+      ) : null}
+      {heroAction ? (
+        <div className="layout__hero-corner-action">{heroAction}</div>
       ) : null}
       <div className="layout__hero-inner">
         <div className="layout__hero-top">

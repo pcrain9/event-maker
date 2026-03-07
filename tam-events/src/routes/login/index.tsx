@@ -1,4 +1,4 @@
-import { type FormEvent, useState } from "react";
+import { type FormEvent, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import LayoutShell from "../../components/layout/LayoutShell";
 import { useAuthStore } from "../../auth/store/authStore";
@@ -32,6 +32,10 @@ export default function LoginRoute() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
+  useEffect(() => {
+    document.title = "Admin Login | TAM Events";
+  }, []);
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
@@ -56,6 +60,13 @@ export default function LoginRoute() {
       <section className="login">
         <div className="login__panel">
           <div className="login__header">
+            <button
+              type="button"
+              className="login__link login__back"
+              onClick={() => navigate(-1)}
+            >
+              {"< Back"}
+            </button>
             <h2>Welcome back</h2>
             <p className="login__subtext">
               Use your staff credentials to keep the TAM Events schedule current

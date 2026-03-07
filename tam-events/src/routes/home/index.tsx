@@ -14,6 +14,7 @@ import type {
 } from "../../types";
 import { getEventBySlug, getAnnouncementsByEvent } from "../../api";
 import { useAuthStore } from "../../auth/store/authStore";
+import { tokenStorage } from "../../auth/storage";
 import {
   formatDayLabel,
   formatDayDate,
@@ -235,7 +236,7 @@ const buildScheduleDays = (items: EventItem[]): ScheduleDay[] => {
             title: item.title,
             room: item.location ?? "TBA",
             track: item.sponsor ?? null,
-            status: item.cancelled ? "later" : getSessionStatus(sessionTime),
+            status: item.cancelled ? "cancelled" : getSessionStatus(sessionTime),
             speakers: item.speakers ?? null,
             description: item.description ?? null,
           };
@@ -261,6 +262,10 @@ export default function HomeRoute() {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const authenticatedUsername = tokenStorage.getUsername();
+  const announcementStorageScope = authenticatedUsername
+    ? `auth:${authenticatedUsername}`
+    : "guest";
   const tab = normalizeHomeTab(searchParams.get("tab"));
   const [eventData, setEventData] = useState<EventResponse | null>(null);
   const [announcements, setAnnouncements] = useState<AdminAnnouncement[]>([]);
@@ -347,13 +352,28 @@ export default function HomeRoute() {
   const title = eventData?.title ?? "Today at TAM";
   const heroImageUrl = eventData?.hero_image_url ?? HERO_PLACEHOLDER_URL;
 
+  useEffect(() => {
+    const pageLabel = tab === "sponsors" ? "Sponsors" : "Schedule";
+    const eventLabel = eventData?.title ?? "TAM Events";
+    document.title = `${pageLabel} | ${eventLabel}`;
+  }, [eventData?.title, tab]);
+
   return (
     <LayoutShell
       title={title}
       subtitle="Browse the program, jump into highlighted sessions, and keep an eye on room shifts as they roll in."
       navItems={navItems}
       notices={notices}
+      announcementStorageScope={announcementStorageScope}
       heroImageUrl={heroImageUrl}
+      heroAction={
+        <button
+          onClick={() => navigate(isAuthenticated ? "/admin" : "/login")}
+          className="admin__button admin__button--primary"
+        >
+          {isAuthenticated ? "Go to Admin" : "Admin Login"}
+        </button>
+      }
     >
       {tab === "events" ? (
         <section className="layout__panel">
@@ -368,14 +388,6 @@ export default function HomeRoute() {
                 <p className="admin__muted">Loading schedule...</p>
               ) : null}
               {loadError ? <p className="admin__muted">{loadError}</p> : null}
-            </div>
-            <div>
-              <button
-                onClick={() => navigate(isAuthenticated ? "/admin" : "/login")}
-                className="admin__button admin__button--primary"
-              >
-                {isAuthenticated ? "Go to Admin" : "Admin Login"}
-              </button>
             </div>
           </div>
 

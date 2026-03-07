@@ -45,6 +45,16 @@ export default function AdminRoute() {
   const [announcementsRefreshKey, setAnnouncementsRefreshKey] = useState(0);
   const eventItemsTabRef = useRef<EventItemsTabRef>(null);
 
+  useEffect(() => {
+    const tabLabelByKey: Record<AdminTab, string> = {
+      events: "Events",
+      eventItems: "Event Items",
+      announcements: "Announcements",
+    };
+
+    document.title = `${tabLabelByKey[tab]} | Admin | TAM Events`;
+  }, [tab]);
+
   // Fetch event slugs from API
   const [eventSlugs, setEventSlugs] = useState<
     Array<{ id: number; slug: string; title: string }>
