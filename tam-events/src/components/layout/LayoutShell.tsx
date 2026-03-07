@@ -1,4 +1,3 @@
-import type { ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
 import Banner from "../banner/Banner";
 import type { LayoutShellProps } from "../../types";
@@ -13,15 +12,17 @@ export default function LayoutShell({
   subtitle,
   navItems = [],
   notices = [],
+  announcementStorageScope = "guest",
   heroImageUrl: _heroImageUrl, // Accept but not used yet
+  heroAction,
   children,
 }: LayoutShellProps) {
   const [dismissedNoticeKeys, setDismissedNoticeKeys] = useState<string[]>([]);
 
-  // Cleanup expired dismissals on mount
+  // Cleanup expired dismissals on mount and scope changes.
   useEffect(() => {
-    cleanupExpiredDismissals();
-  }, []);
+    cleanupExpiredDismissals(announcementStorageScope);
+  }, [announcementStorageScope]);
 
   const visibleNotices = useMemo(
     () =>
@@ -34,14 +35,20 @@ export default function LayoutShell({
 
         // Check persistent dismissal (for API announcements with id and ends)
         if (notice.id !== undefined && notice.ends !== undefined) {
-          if (isAnnouncementDismissed(notice.id, notice.ends)) {
+          if (
+            isAnnouncementDismissed(
+              notice.id,
+              notice.ends,
+              announcementStorageScope,
+            )
+          ) {
             return false;
           }
         }
 
         return true;
       }),
-    [dismissedNoticeKeys, notices],
+    [announcementStorageScope, dismissedNoticeKeys, notices],
   );
 
   return (
@@ -76,7 +83,15 @@ export default function LayoutShell({
                         notice.id !== undefined &&
                         notice.ends !== undefined
                       ) {
-                        dismissAnnouncement(notice.id, notice.ends);
+                        dismissAnnouncement(
+                          {
+                            id: notice.id,
+                            ends: notice.ends,
+                            title: notice.title,
+                            tone: notice.tone,
+                          },
+                          announcementStorageScope,
+                        );
                       }
                     }}
                   >
@@ -89,7 +104,12 @@ export default function LayoutShell({
         </section>
       )}
 
-      <Banner title={title} subtitle={subtitle} navItems={navItems} />
+      <Banner
+        title={title}
+        subtitle={subtitle}
+        navItems={navItems}
+        heroAction={heroAction}
+      />
 
       <main className="layout__content">{children}</main>
 

@@ -8,6 +8,7 @@
  */
 
 const TOKEN_KEY = "auth_token";
+const USERNAME_KEY = "auth_username";
 
 export const tokenStorage = {
   /**
@@ -18,6 +19,17 @@ export const tokenStorage = {
       sessionStorage.setItem(TOKEN_KEY, token);
     } catch (error) {
       console.error("Failed to save token:", error);
+    }
+  },
+
+  /**
+   * Save authenticated username to session storage
+   */
+  saveUsername: (username: string): void => {
+    try {
+      sessionStorage.setItem(USERNAME_KEY, username);
+    } catch (error) {
+      console.error("Failed to save username:", error);
     }
   },
 
@@ -34,11 +46,24 @@ export const tokenStorage = {
   },
 
   /**
+   * Retrieve authenticated username from session storage
+   */
+  getUsername: (): string | null => {
+    try {
+      return sessionStorage.getItem(USERNAME_KEY);
+    } catch (error) {
+      console.error("Failed to retrieve username:", error);
+      return null;
+    }
+  },
+
+  /**
    * Remove authentication token from session storage
    */
   clear: (): void => {
     try {
       sessionStorage.removeItem(TOKEN_KEY);
+      sessionStorage.removeItem(USERNAME_KEY);
     } catch (error) {
       console.error("Failed to clear token:", error);
     }

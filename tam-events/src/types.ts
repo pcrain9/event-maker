@@ -11,6 +11,7 @@ export type BannerProps = {
   subtitle: string;
   navItems?: LayoutNavItem[];
   heroImageUrl?: string | null;
+  heroAction?: ReactNode;
 };
 
 export type LayoutNotice = {
@@ -26,7 +27,9 @@ export type LayoutShellProps = {
   subtitle: string;
   navItems?: LayoutNavItem[];
   notices?: LayoutNotice[];
+  announcementStorageScope?: string;
   heroImageUrl?: string | null;
+  heroAction?: ReactNode;
   children: ReactNode;
 };
 
@@ -42,7 +45,7 @@ export type ScheduleSession = {
   title: string;
   room: string;
   track?: string | null;
-  status: "live" | "up-next" | "later";
+  status: "live" | "up-next" | "later" | "cancelled";
   speakers?: Speaker[] | null;
   description?: string | null;
 };

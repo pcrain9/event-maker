@@ -184,6 +184,12 @@ export default function EventItemModal({
         </div>
         <div className="modal__body">
           <form className="form" onSubmit={handleSubmit}>
+            {error && (
+              <p className="admin__muted" style={{ color: "#b91c1c" }}>
+                {error}
+              </p>
+            )}
+
             <label className="form__field">
               <span>Session title</span>
               <input
