@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuthStore } from "../../auth/store/authStore";
 import AdminLayout from "../../features/admin/admin-layout";
@@ -9,7 +9,7 @@ import EventItemsTab, {
 } from "../../features/admin/event-items-tab";
 import EventItemModal from "../../features/admin/event-item-modal";
 import EventsTab from "../../features/admin/events-tab";
-import { getEvents } from "../../api";
+import { getEventBySlug, getEvents } from "../../api";
 import type {
   AdminEvent,
   AdminEventItem,
@@ -44,6 +44,9 @@ export default function AdminRoute() {
     useState<AdminAnnouncement | null>(null);
   const [announcementsRefreshKey, setAnnouncementsRefreshKey] = useState(0);
   const eventItemsTabRef = useRef<EventItemsTabRef>(null);
+  const [events, setEvents] = useState<AdminEvent[]>([]);
+  const [isEventsLoading, setIsEventsLoading] = useState(true);
+  const [eventsError, setEventsError] = useState<string | null>(null);
 
   useEffect(() => {
     const tabLabelByKey: Record<AdminTab, string> = {
@@ -60,57 +63,75 @@ export default function AdminRoute() {
     Array<{ id: number; slug: string; title: string }>
   >([]);
 
-  const events: AdminEvent[] = useMemo(
-    () => [
-      {
-        id: 1,
-        title: "TAM Annual Summit",
-        dateRange: "Feb 7-9, 2026",
-        location: "Austin, TX",
-        status: "live",
-        itemsCount: 18,
-      },
-      {
-        id: 2,
-        title: "Collections Leadership Lab",
-        dateRange: "Mar 12-13, 2026",
-        location: "Houston, TX",
-        status: "draft",
-        itemsCount: 6,
-      },
-      {
-        id: 3,
-        title: "Member Programs Showcase",
-        dateRange: "Apr 4, 2026",
-        location: "Dallas, TX",
-        status: "archived",
-        itemsCount: 9,
-      },
-    ],
-    [],
-  );
-
-  const eventItems: AdminEventItem[] = useMemo(
-    () => [
-      // Event items are now fetched from the backend in EventItemsTab
-      // This array is kept for type compatibility but unused
-    ],
-    [],
-  );
-
-  // Fetch event slugs on component mount
+  // Fetch event summaries and item counts on component mount
   useEffect(() => {
+    let isMounted = true;
+
     const fetchEventSlugs = async () => {
+      setIsEventsLoading(true);
+
       try {
         const response = await getEvents();
+        if (!isMounted) {
+          return;
+        }
+
         setEventSlugs(response.events);
+
+        const eventsWithCounts = await Promise.all(
+          response.events.map(async (event) => {
+            try {
+              const detail = await getEventBySlug(event.slug);
+              const itemsCount = detail.event_items.length;
+
+              return {
+                id: event.id,
+                slug: event.slug,
+                title: event.title,
+                status: itemsCount > 0 ? "live" : "draft",
+                itemsCount,
+              } satisfies AdminEvent;
+            } catch (error) {
+              console.error(`Failed to fetch event details for ${event.slug}:`, error);
+              return {
+                id: event.id,
+                slug: event.slug,
+                title: event.title,
+                status: "draft",
+                itemsCount: 0,
+              } satisfies AdminEvent;
+            }
+          }),
+        );
+
+        if (!isMounted) {
+          return;
+        }
+
+        setEvents(eventsWithCounts);
+        setEventsError(null);
       } catch (error) {
         console.error("Failed to fetch event slugs:", error);
+
+        if (!isMounted) {
+          return;
+        }
+
         setEventSlugs([]);
+        setEvents([]);
+        setEventsError("Failed to load events.");
+      } finally {
+        if (isMounted) {
+          setIsEventsLoading(false);
+        }
       }
     };
 
     fetchEventSlugs();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -174,7 +195,11 @@ export default function AdminRoute() {
         userFullName={user?.full_name}
       >
         {tab === "events" && (
-          <EventsTab events={events} eventItems={eventItems} />
+          <EventsTab
+            events={events}
+            isLoading={isEventsLoading}
+            error={eventsError}
+          />
         )}
         {tab === "eventItems" && (
           <EventItemsTab

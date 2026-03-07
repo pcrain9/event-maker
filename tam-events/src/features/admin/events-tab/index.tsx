@@ -1,11 +1,21 @@
-import type { AdminEvent, AdminEventItem } from "../../../types";
+import type { AdminEvent } from "../../../types";
 
 type EventsTabProps = {
   events: AdminEvent[];
-  eventItems: AdminEventItem[];
+  isLoading: boolean;
+  error: string | null;
 };
 
-export default function EventsTab({ events, eventItems }: EventsTabProps) {
+export default function EventsTab({
+  events,
+  isLoading,
+  error,
+}: EventsTabProps) {
+  const totalSessions = events.reduce(
+    (sum, event) => sum + event.itemsCount,
+    0,
+  );
+
   return (
     <section className="admin-tab-content">
       <div className="admin__panel-header">
@@ -16,16 +26,16 @@ export default function EventsTab({ events, eventItems }: EventsTabProps) {
           </p>
         </div>
         <div className="admin__actions">
-          <button className="admin__button admin__button--ghost">
+          {/* <button className="admin__button admin__button--ghost">
             New event
-          </button>
+          </button> */}
         </div>
       </div>
 
       <div className="admin__grid">
         <div className="admin__card">
           <p className="admin__eyebrow">Total sessions</p>
-          <h3>{eventItems.length}</h3>
+          <h3>{totalSessions}</h3>
           <p className="admin__muted">Session count across all events.</p>
         </div>
       </div>
@@ -36,24 +46,38 @@ export default function EventsTab({ events, eventItems }: EventsTabProps) {
             <h3>Total events</h3>
           </div>
         </div>
-        <ul className="admin__list">
-          {events.map((event) => (
-            <li key={event.id} className="admin__list-item">
-              <div>
-                <p className="admin__list-title">{event.title}</p>
-                <p className="admin__muted">
-                  {event.dateRange} • {event.location}
-                </p>
-              </div>
-              <div className="admin__list-meta">
-                <span className="admin__pill" data-tone={event.status}>
-                  {event.status}
-                </span>
-                <span className="admin__count">{event.itemsCount} items</span>
-              </div>
-            </li>
-          ))}
-        </ul>
+        {isLoading ? (
+          <p className="admin__muted" style={{ padding: "1rem" }}>
+            Loading events...
+          </p>
+        ) : error ? (
+          <p
+            className="admin__muted"
+            style={{ padding: "1rem", color: "#b91c1c" }}
+          >
+            {error}
+          </p>
+        ) : events.length === 0 ? (
+          <p className="admin__muted" style={{ padding: "1rem" }}>
+            No events found.
+          </p>
+        ) : (
+          <ul className="admin__list">
+            {events.map((event) => (
+              <li key={event.id} className="admin__list-item">
+                <div>
+                  <p className="admin__list-title">{event.title}</p>
+                </div>
+                <div className="admin__list-meta">
+                  <span className="admin__pill" data-tone={event.status}>
+                    {event.status}
+                  </span>
+                  <span className="admin__count">{event.itemsCount} items</span>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </section>
   );
