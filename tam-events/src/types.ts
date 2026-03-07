@@ -11,12 +11,15 @@ export type BannerProps = {
   subtitle: string;
   navItems?: LayoutNavItem[];
   heroImageUrl?: string | null;
+  heroAction?: ReactNode;
 };
 
 export type LayoutNotice = {
   tone: "info" | "success" | "warning" | "danger";
   title: string;
   message: string;
+  id?: number;
+  ends?: string;
 };
 
 export type LayoutShellProps = {
@@ -24,7 +27,9 @@ export type LayoutShellProps = {
   subtitle: string;
   navItems?: LayoutNavItem[];
   notices?: LayoutNotice[];
+  announcementStorageScope?: string;
   heroImageUrl?: string | null;
+  heroAction?: ReactNode;
   children: ReactNode;
 };
 
@@ -40,7 +45,7 @@ export type ScheduleSession = {
   title: string;
   room: string;
   track?: string | null;
-  status: "live" | "up-next" | "later";
+  status: "live" | "up-next" | "later" | "cancelled";
   speakers?: Speaker[] | null;
   description?: string | null;
 };
@@ -72,25 +77,40 @@ export type EventItem = {
   event_id: number;
 };
 
+export type EventItemUpdate = {
+  title?: string;
+  sponsor?: string | null;
+  time?: string;
+  speakers?: Speaker[] | null;
+  link?: string | null;
+  description?: string | null;
+  location?: string | null;
+  cancelled?: boolean | null;
+  slides?: string[] | null;
+};
+
 export type AdminTab = "events" | "eventItems" | "announcements";
 
 export type AdminEvent = {
   id: number;
+  slug: string;
   title: string;
-  dateRange: string;
-  location: string;
   status: "live" | "draft" | "archived";
   itemsCount: number;
 };
 
 export type AdminEventItem = {
   id: number;
-  eventId: number;
+  event_id: number;
   title: string;
+  sponsor?: string | null;
   time: string;
-  room: string;
-  speaker: string;
-  status: "live" | "up-next" | "later" | "draft";
+  speakers?: Speaker[] | null;
+  link?: string | null;
+  description?: string | null;
+  location?: string | null;
+  cancelled?: boolean | null;
+  slides?: string[] | null;
 };
 
 export type AdminAnnouncement = {
@@ -100,6 +120,25 @@ export type AdminAnnouncement = {
   tone: "info" | "success" | "warning" | "danger";
   starts: string;
   ends: string;
+  event_id: number;
+  created_at: string;
+};
+
+export type AnnouncementCreate = {
+  title: string;
+  body: string;
+  tone: "info" | "success" | "warning" | "danger";
+  starts: string;
+  ends: string;
+  event_id: number;
+};
+
+export type AnnouncementUpdate = {
+  title?: string;
+  body?: string;
+  tone?: "info" | "success" | "warning" | "danger";
+  starts?: string;
+  ends?: string;
 };
 
 export type ThemeColors = {
@@ -122,7 +161,11 @@ export type EventResponse = {
 };
 
 export type EventIdsResponse = {
-  event_ids: number[];
+  events: Array<{
+    id: number;
+    slug: string;
+    title: string;
+  }>;
 };
 
 // Authentication Types

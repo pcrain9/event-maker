@@ -83,8 +83,8 @@ async def get_event_with_items(slug: str, db: AsyncSession) -> EventItemResponse
     # Use default color scheme if not set
     color_scheme = ColorScheme(**event.color_scheme) if event.color_scheme else DEFAULT_COLOR_SCHEME
     
-    # Query event items
-    items_query = select(Event_Item).where(Event_Item.event_id == event_id_val)
+    # Query event items ordered by time (chronological)
+    items_query = select(Event_Item).where(Event_Item.event_id == event_id_val).order_by(Event_Item.time)
     items_result = await db.execute(items_query)
     event_items = items_result.scalars().all()
     
@@ -117,3 +117,25 @@ async def get_event_with_items(slug: str, db: AsyncSession) -> EventItemResponse
     )
 
 
+async def get_all_events(db: AsyncSession) -> list[dict]:
+    """
+    Fetch all events with basic info for list views.
+    
+    Args:
+        db: The database session
+    
+    Returns:
+        List of event dictionaries with id, slug, title
+    """
+    query = select(Event).order_by(Event.id)
+    result = await db.execute(query)
+    events = result.scalars().all()
+    
+    return [
+        {
+            "id": event.id,
+            "slug": event.slug,
+            "title": event.title
+        }
+        for event in events
+    ]

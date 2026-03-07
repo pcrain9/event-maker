@@ -53,6 +53,7 @@ export const ScheduleAccordion = ({
           const hasSpeakers = speakers.length > 0;
           const description = session.description?.trim();
           const trackLabel = session.track?.trim();
+          const isCancelled = session.status === "cancelled";
 
           return (
             <div
@@ -97,6 +98,11 @@ export const ScheduleAccordion = ({
                 <div>
                   <p className="schedule__time">{session.time}</p>
                   <h3 className="schedule__title">{session.title}</h3>
+                  {isCancelled ? (
+                    <span className="schedule__status-badge" aria-label="Session cancelled">
+                      Cancelled
+                    </span>
+                  ) : null}
                   {trackLabel ? (
                     <span className="schedule__track">
                       Sponsored by: {trackLabel}

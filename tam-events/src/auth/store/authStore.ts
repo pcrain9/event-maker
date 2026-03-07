@@ -77,6 +77,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 
       // Persist token to storage
       tokenStorage.save(response.access_token);
+      tokenStorage.saveUsername(response.user.username);
 
       // Update state immutably
       set({

@@ -1,34 +1,58 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Banner from "../banner/Banner";
 import type { LayoutShellProps } from "../../types";
+import {
+  cleanupExpiredDismissals,
+  dismissAnnouncement,
+  isAnnouncementDismissed,
+} from "../../utils/announcements";
 
 export default function LayoutShell({
   title,
   subtitle,
   navItems = [],
   notices = [],
-  heroImageUrl,
+  announcementStorageScope = "guest",
+  heroImageUrl: _heroImageUrl, // Accept but not used yet
+  heroAction,
   children,
 }: LayoutShellProps) {
   const [dismissedNoticeKeys, setDismissedNoticeKeys] = useState<string[]>([]);
+
+  // Cleanup expired dismissals on mount and scope changes.
+  useEffect(() => {
+    cleanupExpiredDismissals(announcementStorageScope);
+  }, [announcementStorageScope]);
+
   const visibleNotices = useMemo(
     () =>
-      notices.filter(
-        (notice) =>
-          !dismissedNoticeKeys.includes(`${notice.tone}-${notice.title}`),
-      ),
-    [dismissedNoticeKeys, notices],
+      notices.filter((notice) => {
+        // Check session-state dismissal (by tone + title, for backward compat with hardcoded notices)
+        const sessionKey = `${notice.tone}-${notice.title}`;
+        if (dismissedNoticeKeys.includes(sessionKey)) {
+          return false;
+        }
+
+        // Check persistent dismissal (for API announcements with id and ends)
+        if (notice.id !== undefined && notice.ends !== undefined) {
+          if (
+            isAnnouncementDismissed(
+              notice.id,
+              notice.ends,
+              announcementStorageScope,
+            )
+          ) {
+            return false;
+          }
+        }
+
+        return true;
+      }),
+    [announcementStorageScope, dismissedNoticeKeys, notices],
   );
 
   return (
     <div className="layout">
-      <Banner
-        title={title}
-        subtitle={subtitle}
-        navItems={navItems}
-        heroImageUrl={heroImageUrl}
-      />
-
       {visibleNotices.length > 0 && (
         <section className="layout__notices" aria-live="polite">
           {visibleNotices.map((notice) => {
@@ -39,31 +63,58 @@ export default function LayoutShell({
                 className="layout__notice"
                 data-tone={notice.tone}
               >
-                <div className="layout__notice-header">
-                  <p className="layout__notice-title">{notice.title}</p>
+                <div className="layout__notice-content">
+                  <div className="layout__notice-text">
+                    <p className="layout__notice-title">{notice.title}</p>
+                    <p className="layout__notice-message">{notice.message}</p>
+                  </div>
                   <button
                     className="layout__notice-close"
                     type="button"
                     aria-label="Close notification"
-                    onClick={() =>
+                    onClick={() => {
+                      const noticeKey = `${notice.tone}-${notice.title}`;
                       setDismissedNoticeKeys((prev) =>
                         prev.includes(noticeKey) ? prev : [...prev, noticeKey],
-                      )
-                    }
+                      );
+
+                      // Persist dismissal for API announcements
+                      if (
+                        notice.id !== undefined &&
+                        notice.ends !== undefined
+                      ) {
+                        dismissAnnouncement(
+                          {
+                            id: notice.id,
+                            ends: notice.ends,
+                            title: notice.title,
+                            tone: notice.tone,
+                          },
+                          announcementStorageScope,
+                        );
+                      }
+                    }}
                   >
-                    Close
+                    ✕
                   </button>
                 </div>
-                <p className="layout__notice-message">{notice.message}</p>
               </article>
             );
           })}
         </section>
       )}
 
+      <Banner
+        title={title}
+        subtitle={subtitle}
+        navItems={navItems}
+        heroAction={heroAction}
+      />
+
       <main className="layout__content">{children}</main>
 
       <footer className="layout__footer">
+        <p>TAM Conference Program. Curated moments, clear schedules.</p>
         <div className="layout__footer-meta">
           <span>Contact: tam-events@conference.org</span>
           <span>Last updated: Feb 7, 2026</span>

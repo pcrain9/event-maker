@@ -7,6 +7,7 @@ import LoginRoute from "./routes/login";
 import { ThemeProvider } from "./theme";
 import { useAuthStore } from "./auth/store/authStore";
 import ProtectedRoute from "./auth/auth-guard/ProtectedRoute";
+import { ToastContainer } from "./components/toast";
 
 function App() {
   const restoreSession = useAuthStore((state) => state.restoreSession);
@@ -32,7 +33,8 @@ function App() {
           />
           <Route path="*" element={<Navigate to="/austin-2025" replace />} />
         </Routes>
-      </BrowserRouter>
+      </BrowserRouter>{" "}
+      <ToastContainer />{" "}
     </ThemeProvider>
   );
 }

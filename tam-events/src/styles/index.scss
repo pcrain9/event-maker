@@ -1,3 +1,4 @@
+@use "./toast.scss";
 @import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=IBM+Plex+Sans:wght@300;400;500;600&family=Outfit:wght@300;400;500;600&family=Playfair+Display:wght@500;600;700&family=Space+Grotesk:wght@400;500;600&display=swap");
 
 :root {
@@ -27,9 +28,11 @@
   --preview-card: linear-gradient(140deg, #fff 0%, #f9efe6 100%);
   --field: #fff;
   --focus-ring: rgb(var(--accent-rgb) / 0.25);
+  --info: #2e78c7;
   --success: #2a8c5a;
   --warning: #c78422;
   --danger: #b7433e;
+  --info-rgb: 46 120 199;
   --success-rgb: 42 140 90;
   --warning-rgb: 199 132 34;
   --danger-rgb: 183 67 62;

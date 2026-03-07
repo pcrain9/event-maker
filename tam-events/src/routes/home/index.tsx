@@ -9,9 +9,17 @@ import type {
   HomeTab,
   ScheduleDay,
   ThemeColors,
+  LayoutNotice,
+  AdminAnnouncement,
 } from "../../types";
-import { getEventBySlug } from "../../api";
+import { getEventBySlug, getAnnouncementsByEvent } from "../../api";
 import { useAuthStore } from "../../auth/store/authStore";
+import { tokenStorage } from "../../auth/storage";
+import {
+  formatDayLabel,
+  formatDayDate,
+  formatSessionTime,
+} from "../../utils/date";
 
 const DEFAULT_TAB: HomeTab = "events";
 
@@ -173,15 +181,6 @@ const dummyEventItems: EventItem[] = [
   },
 ];
 
-const formatDayLabel = (date: Date) =>
-  date.toLocaleDateString("en-US", { weekday: "long" });
-
-const formatDayDate = (date: Date) =>
-  date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-
-const formatSessionTime = (date: Date) =>
-  date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
-
 const getSessionStatus = (time: Date) => {
   const now = new Date();
   const diffMs = time.getTime() - now.getTime();
@@ -237,7 +236,7 @@ const buildScheduleDays = (items: EventItem[]): ScheduleDay[] => {
             title: item.title,
             room: item.location ?? "TBA",
             track: item.sponsor ?? null,
-            status: item.cancelled ? "later" : getSessionStatus(sessionTime),
+            status: item.cancelled ? "cancelled" : getSessionStatus(sessionTime),
             speakers: item.speakers ?? null,
             description: item.description ?? null,
           };
@@ -263,8 +262,13 @@ export default function HomeRoute() {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const authenticatedUsername = tokenStorage.getUsername();
+  const announcementStorageScope = authenticatedUsername
+    ? `auth:${authenticatedUsername}`
+    : "guest";
   const tab = normalizeHomeTab(searchParams.get("tab"));
   const [eventData, setEventData] = useState<EventResponse | null>(null);
+  const [announcements, setAnnouncements] = useState<AdminAnnouncement[]>([]);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const scheduleDays = useMemo(
@@ -275,13 +279,24 @@ export default function HomeRoute() {
     { label: "Events", href: "?tab=events", isActive: tab === "events" },
     { label: "Sponsors", href: "?tab=sponsors", isActive: tab === "sponsors" },
   ];
-  const notices = [
-    {
-      tone: "info" as const,
-      title: "Check-in opens at 8:00 AM",
-      message: "Stop by the welcome desk for your badge and day-one guide.",
-    },
-  ];
+
+  // Convert announcements to notices format and filter by active date range
+  const notices: LayoutNotice[] = useMemo(() => {
+    const now = new Date();
+    return announcements
+      .filter((announcement) => {
+        const starts = new Date(announcement.starts);
+        const ends = new Date(announcement.ends);
+        return now >= starts && now <= ends;
+      })
+      .map((announcement) => ({
+        id: announcement.id,
+        tone: announcement.tone,
+        title: announcement.title,
+        message: announcement.body,
+        ends: announcement.ends,
+      }));
+  }, [announcements]);
 
   useEffect(() => {
     const current = searchParams.get("tab");
@@ -306,14 +321,25 @@ export default function HomeRoute() {
         if (!isMounted) return;
         setEventData(data);
         applyColorScheme(data.color_scheme);
+
+        // Fetch announcements for this event
+        try {
+          const eventAnnouncements = await getAnnouncementsByEvent(data.id);
+          if (isMounted) {
+            setAnnouncements(eventAnnouncements);
+          }
+        } catch (announcementError) {
+          console.error("Failed to load announcements:", announcementError);
+          // Don't fail the whole page if announcements fail
+        }
+
         setLoadError(null);
       } catch (error) {
         if (!isMounted) return;
         console.error("Failed to load event items:", error);
         setLoadError("Unable to load event data right now.");
       } finally {
-        if (!isMounted) return;
-        setIsLoading(false);
+        if (isMounted) setIsLoading(false);
       }
     };
 
@@ -326,13 +352,28 @@ export default function HomeRoute() {
   const title = eventData?.title ?? "Today at TAM";
   const heroImageUrl = eventData?.hero_image_url ?? HERO_PLACEHOLDER_URL;
 
+  useEffect(() => {
+    const pageLabel = tab === "sponsors" ? "Sponsors" : "Schedule";
+    const eventLabel = eventData?.title ?? "TAM Events";
+    document.title = `${pageLabel} | ${eventLabel}`;
+  }, [eventData?.title, tab]);
+
   return (
     <LayoutShell
       title={title}
       subtitle="Browse the program, jump into highlighted sessions, and keep an eye on room shifts as they roll in."
       navItems={navItems}
       notices={notices}
+      announcementStorageScope={announcementStorageScope}
       heroImageUrl={heroImageUrl}
+      heroAction={
+        <button
+          onClick={() => navigate(isAuthenticated ? "/admin" : "/login")}
+          className="admin__button admin__button--primary"
+        >
+          {isAuthenticated ? "Go to Admin" : "Admin Login"}
+        </button>
+      }
     >
       {tab === "events" ? (
         <section className="layout__panel">
@@ -347,14 +388,6 @@ export default function HomeRoute() {
                 <p className="admin__muted">Loading schedule...</p>
               ) : null}
               {loadError ? <p className="admin__muted">{loadError}</p> : null}
-            </div>
-            <div>
-              <button
-                onClick={() => navigate(isAuthenticated ? "/admin" : "/login")}
-                className="admin__button admin__button--primary"
-              >
-                {isAuthenticated ? "Go to Admin" : "Admin Login"}
-              </button>
             </div>
           </div>
 
