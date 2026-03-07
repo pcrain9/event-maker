@@ -93,9 +93,8 @@ export type AdminTab = "events" | "eventItems" | "announcements";
 
 export type AdminEvent = {
   id: number;
+  slug: string;
   title: string;
-  dateRange: string;
-  location: string;
   status: "live" | "draft" | "archived";
   itemsCount: number;
 };
