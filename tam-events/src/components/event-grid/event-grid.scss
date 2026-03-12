@@ -1,0 +1,41 @@
+/**
+ * Event Grid Component Styles
+ * Responsive grid layout for event cards
+ */
+
+.event-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 32px;
+  padding: 48px 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+
+  @media (max-width: 768px) {
+    gap: 24px;
+    padding: 32px 20px;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+
+  @media (max-width: 480px) {
+    gap: 16px;
+    padding: 24px 16px;
+    grid-template-columns: 1fr;
+  }
+
+  &--empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+    background: #f9f9f9;
+  }
+}
+
+.event-grid__empty-state {
+  text-align: center;
+  color: #666;
+  font-size: 16px;
+  font-weight: 500;
+}
