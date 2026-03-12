@@ -1,0 +1,58 @@
+/**
+ * Hero Landing Section Styles
+ * Professional, centered hero with TAM welcome message
+ */
+
+.hero-landing {
+  width: 100%;
+  padding: 80px 24px;
+  background: linear-gradient(135deg, #f5f5f5 0%, #ffffff 100%);
+  text-align: center;
+  border-bottom: 1px solid #e8e8e8;
+
+  @media (max-width: 768px) {
+    padding: 60px 20px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 48px 16px;
+  }
+}
+
+.hero-landing__content {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.hero-landing__title {
+  font-size: 48px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  margin: 0 0 12px 0;
+  color: #1a1a1a;
+  line-height: 1.2;
+
+  @media (max-width: 768px) {
+    font-size: 36px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 28px;
+  }
+}
+
+.hero-landing__subtitle {
+  font-size: 18px;
+  font-weight: 500;
+  color: #666;
+  margin: 0;
+  letter-spacing: 0.3px;
+
+  @media (max-width: 768px) {
+    font-size: 16px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 14px;
+  }
+}
