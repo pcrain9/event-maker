@@ -12,7 +12,11 @@ import type {
 import type { AuthError } from "./auth/store/authStore";
 import { tokenStorage } from "./auth/storage";
 
-const API_BASE_URL = "http://localhost:8000";
+const API_BASE_URL = import.meta.env.VITE_API_ENDPOINT?.trim();
+
+if (!API_BASE_URL) {
+  throw new Error("Missing required environment variable: VITE_API_ENDPOINT");
+}
 
 /**
  * Public API client - No authentication required
