@@ -62,44 +62,14 @@ export const ScheduleAccordion = ({
               data-status={session.status}
             >
               <div className="schedule__summary">
-                {hasSpeakers ? (
-                  <div
-                    className="schedule__speaker-stack"
-                    aria-label="Speakers"
-                  >
-                    {speakers.map((speaker, index) => {
-                      const speakerImage = speaker.headshot?.trim();
-                      const speakerInitials = speaker.name
-                        ? getSpeakerInitials(speaker.name)
-                        : "TBA";
-
-                      return (
-                        <div
-                          key={`${speaker.name}-${index}`}
-                          className="schedule__speaker"
-                        >
-                          {speakerImage ? (
-                            <img
-                              className="schedule__speaker-img"
-                              src={speakerImage}
-                              alt={`Portrait of ${speaker.name}`}
-                              loading="lazy"
-                            />
-                          ) : (
-                            <span className="schedule__speaker-fallback">
-                              {speakerInitials}
-                            </span>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                ) : null}
                 <div>
                   <p className="schedule__time">{session.time}</p>
                   <h3 className="schedule__title">{session.title}</h3>
                   {isCancelled ? (
-                    <span className="schedule__status-badge" aria-label="Session cancelled">
+                    <span
+                      className="schedule__status-badge"
+                      aria-label="Session cancelled"
+                    >
                       Cancelled
                     </span>
                   ) : null}
@@ -110,6 +80,39 @@ export const ScheduleAccordion = ({
                   ) : null}
                   {speakerNames.length > 0 ? (
                     <p className="schedule__speakers">{speakerNames}</p>
+                  ) : null}
+                  {hasSpeakers ? (
+                    <div
+                      className="schedule__speaker-stack"
+                      aria-label="Speakers"
+                    >
+                      {speakers.map((speaker, index) => {
+                        const speakerImage = speaker.headshot?.trim();
+                        const speakerInitials = speaker.name
+                          ? getSpeakerInitials(speaker.name)
+                          : "TBA";
+
+                        return (
+                          <div
+                            key={`${speaker.name}-${index}`}
+                            className="schedule__speaker"
+                          >
+                            {speakerImage ? (
+                              <img
+                                className="schedule__speaker-img"
+                                src={speakerImage}
+                                alt={`Portrait of ${speaker.name}`}
+                                loading="lazy"
+                              />
+                            ) : (
+                              <span className="schedule__speaker-fallback">
+                                {speakerInitials}
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
                   ) : null}
                   <p className="schedule__location">{session.room}</p>
                   {description ? (
