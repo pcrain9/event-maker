@@ -6,7 +6,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from backend.routes import events, announcements
 
 from .scripts.seed import seed_database
-from .db import init_models, get_db
 from .routes import users
 
 def _parse_csv_env(var_name: str, default: str) -> list[str]:
@@ -61,8 +60,7 @@ async def on_startup():
         return
     
     try:
-        # Ensure tables exist first, then seed data
-        await init_models()
+        print("ℹ️  Alembic-managed schema mode enabled")
         await seed_database()
     except Exception as e:
         print(f"⚠️  Database initialization failed: {e}")

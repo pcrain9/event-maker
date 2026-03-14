@@ -52,9 +52,3 @@ async def get_db():
         except Exception:
             await session.rollback()
             raise
-
-async def init_models():
-    """Create database tables (if they don't exist)."""
-    engine = get_engine()
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
