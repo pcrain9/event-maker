@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 
 from backend.routes import events, announcements
@@ -8,6 +8,7 @@ from .db import init_models, get_db
 from .routes import users
 
 app = FastAPI()
+api_v1 = APIRouter(prefix="/api/v1")
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
@@ -43,11 +44,14 @@ async def on_startup():
 
 
 @app.get("/")
+@app.get("/api/v1/")
 async def health_check():
     """Health check endpoint for CI/CD and monitoring."""
     return {"status": "ok", "service": "tam-events-backend"}
 
 
-app.include_router(users.router)
-app.include_router(events.router)
-app.include_router(announcements.router)
+api_v1.include_router(users.router)
+api_v1.include_router(events.router)
+api_v1.include_router(announcements.router)
+
+app.include_router(api_v1)
