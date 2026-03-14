@@ -1,4 +1,6 @@
-from fastapi import FastAPI, APIRouter
+import os
+
+from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from backend.routes import events, announcements
@@ -7,13 +9,40 @@ from .scripts.seed import seed_database
 from .db import init_models, get_db
 from .routes import users
 
+def _parse_csv_env(var_name: str, default: str) -> list[str]:
+    raw_value = os.getenv(var_name, default)
+    return [entry.strip().rstrip("/") for entry in raw_value.split(",") if entry.strip()]
+
+
+def _parse_bool_env(var_name: str, default: str = "true") -> bool:
+    return os.getenv(var_name, default).strip().lower() in {"1", "true", "yes", "on"}
+
+
 app = FastAPI()
 api_v1 = APIRouter(prefix="/api/v1")
-# Add CORS middleware
+
+cors_origins = _parse_csv_env(
+    "CORS_ALLOW_ORIGINS",
+    "http://localhost:5173,http://127.0.0.1:5173",
+)
+cors_allow_credentials = _parse_bool_env("CORS_ALLOW_CREDENTIALS", "true")
+cors_origin_regex = os.getenv("CORS_ALLOW_ORIGIN_REGEX")
+
+if "*" in cors_origins and cors_allow_credentials:
+    # Browsers reject wildcard origins when credentials are allowed.
+    error_message = (
+        "CORS misconfiguration: CORS_ALLOW_ORIGINS cannot contain '*' when "
+        "CORS_ALLOW_CREDENTIALS is true. Use explicit origins or set "
+        "CORS_ALLOW_CREDENTIALS=false."
+    )
+    print(f"❌  {error_message}")
+    raise ValueError(error_message)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
-    allow_credentials=True,
+    allow_origins=cors_origins,
+    allow_origin_regex=cors_origin_regex,
+    allow_credentials=cors_allow_credentials,
     allow_methods=["*"],
     allow_headers=["*"],
     expose_headers=["*"],
@@ -23,8 +52,6 @@ app.add_middleware(
 async def on_startup():
     print("backend STARTUP — backend.main loaded")
     # Skip database initialization if explicitly disabled or DATABASE_URL not set
-    import os
-    
     if os.getenv("SKIP_DB_INIT", "false").lower() == "true":
         print("⚠️  SKIP_DB_INIT is set, skipping database initialization")
         return
