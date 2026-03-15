@@ -4,7 +4,7 @@ from backend.scripts import seed_users
 from ..models.user import User
 from ..models.event import Event
 from ..models.event_item import Event_Item
-from ..db import get_session_factory, init_models
+from ..db import get_session_factory
 from .seed_event import seed_event_database
 import asyncio
 
@@ -41,9 +41,6 @@ async def seed_database(clear: bool = False):
     Args:
         clear: If True, delete all existing data before seeding. Default is False.
     """
-    # Recreate all tables with updated schema
-    await init_models()
-    
     # Clear existing data if requested
     if clear:
         await clear_all_data()

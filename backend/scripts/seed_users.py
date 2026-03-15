@@ -1,6 +1,6 @@
 from sqlalchemy import select
 from ..models.user import User
-from ..db import get_session_factory, init_models, get_engine
+from ..db import get_session_factory
 import bcrypt
 import os
 from dotenv import load_dotenv

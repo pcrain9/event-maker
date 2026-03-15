@@ -18,5 +18,5 @@ COPY . /app
 
 EXPOSE 8000
 
-# Run the app using the package module path so relative imports work
-CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Always run Alembic migrations before app startup.
+CMD ["sh", "-ec", "echo 'Running Alembic migrations...'; cd backend && alembic upgrade head && cd /app; exec uvicorn backend.main:app --host 0.0.0.0 --port 8000"]
