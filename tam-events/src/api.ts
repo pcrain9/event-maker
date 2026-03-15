@@ -5,6 +5,7 @@ import type {
   LoginResponse,
   EventItem,
   EventItemUpdate,
+  EventUpdate,
   AdminAnnouncement,
   AnnouncementCreate,
   AnnouncementUpdate,
@@ -159,6 +160,25 @@ export const updateEventItem = async (
 ): Promise<EventItem> => {
   const response = await authenticatedClient.put<EventItem>(
     `/events/${eventId}/items/${itemId}`,
+    data,
+  );
+  return response.data;
+};
+
+/**
+ * Update an event - ADMIN ONLY
+ *
+ * @param eventId - The ID of the event to update
+ * @param data - Partial update data (footer links only for now)
+ * @returns Updated event
+ * @throws {AxiosError} 401 if unauthorized, 403 if not admin, 404 if not found
+ */
+export const updateEvent = async (
+  eventId: number,
+  data: EventUpdate,
+): Promise<EventResponse> => {
+  const response = await authenticatedClient.put<EventResponse>(
+    `/events/${eventId}`,
     data,
   );
   return response.data;

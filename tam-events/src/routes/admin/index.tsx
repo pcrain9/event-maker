@@ -4,6 +4,7 @@ import { useAuthStore } from "../../auth/store/authStore";
 import AdminLayout from "../../features/admin/admin-layout";
 import AnnouncementsTab from "../../features/admin/announcements-tab";
 import AnnouncementModal from "../../features/admin/announcement-modal";
+import EventModal from "../../features/admin/event-modal";
 import EventItemsTab, {
   type EventItemsTabRef,
 } from "../../features/admin/event-items-tab";
@@ -15,6 +16,7 @@ import type {
   AdminEventItem,
   AdminAnnouncement,
   AdminTab,
+  EventResponse,
 } from "../../types";
 
 const DEFAULT_TAB: AdminTab = "events";
@@ -37,8 +39,9 @@ export default function AdminRoute() {
   const logout = useAuthStore((state) => state.logout);
   const tab = normalizeAdminTab(searchParams.get("tab"));
   const [activeModal, setActiveModal] = useState<
-    "event-item" | "announcement" | null
+    "event-item" | "announcement" | "event" | null
   >(null);
+  const [selectedEvent, setSelectedEvent] = useState<AdminEvent | null>(null);
   const [selectedItem, setSelectedItem] = useState<AdminEventItem | null>(null);
   const [selectedAnnouncement, setSelectedAnnouncement] =
     useState<AdminAnnouncement | null>(null);
@@ -90,6 +93,7 @@ export default function AdminRoute() {
                 title: event.title,
                 status: itemsCount > 0 ? "live" : "draft",
                 itemsCount,
+                footer_links: detail.footer_links,
               } satisfies AdminEvent;
             } catch (error) {
               console.error(`Failed to fetch event details for ${event.slug}:`, error);
@@ -99,6 +103,7 @@ export default function AdminRoute() {
                 title: event.title,
                 status: "draft",
                 itemsCount: 0,
+                footer_links: null,
               } satisfies AdminEvent;
             }
           }),
@@ -149,6 +154,7 @@ export default function AdminRoute() {
     const handleKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setActiveModal(null);
+        setSelectedEvent(null);
         setSelectedItem(null);
         setSelectedAnnouncement(null);
       }
@@ -169,6 +175,11 @@ export default function AdminRoute() {
     setActiveModal("event-item");
   };
 
+  const openEventModal = (event: AdminEvent) => {
+    setSelectedEvent(event);
+    setActiveModal("event");
+  };
+
   const openAnnouncementModal = (announcement?: AdminAnnouncement) => {
     setSelectedAnnouncement(announcement ?? null);
     setActiveModal("announcement");
@@ -176,8 +187,22 @@ export default function AdminRoute() {
 
   const closeModal = () => {
     setActiveModal(null);
+    setSelectedEvent(null);
     setSelectedItem(null);
     setSelectedAnnouncement(null);
+  };
+
+  const handleEventSave = (updatedEvent: EventResponse) => {
+    setEvents((currentEvents) =>
+      currentEvents.map((event) =>
+        event.id === updatedEvent.id
+          ? {
+              ...event,
+              footer_links: updatedEvent.footer_links,
+            }
+          : event,
+      ),
+    );
   };
 
   const handleLogout = () => {
@@ -199,6 +224,7 @@ export default function AdminRoute() {
             events={events}
             isLoading={isEventsLoading}
             error={eventsError}
+            onEditEvent={openEventModal}
           />
         )}
         {tab === "eventItems" && (
@@ -233,6 +259,14 @@ export default function AdminRoute() {
 
           // Refresh the event items list after saving
           eventItemsTabRef.current?.refreshEventItems();
+        }}
+      />
+      <EventModal
+        isOpen={activeModal === "event"}
+        onClose={closeModal}
+        selectedEvent={selectedEvent}
+        onSave={(updatedEvent) => {
+          handleEventSave(updatedEvent);
         }}
       />
       <AnnouncementModal

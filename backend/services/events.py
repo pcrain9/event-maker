@@ -1,11 +1,12 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.exc import SQLAlchemyError
 
 from backend import db
 from backend.constants import DEFAULT_COLOR_SCHEME
 from backend.models.event import Event
 from backend.models.event_item import Event_Item
-from backend.schema.event_item import EventItemResponse, EventItemDetail, ColorScheme
+from backend.schema.event_item import EventItemResponse, EventItemDetail, ColorScheme, EventUpdate, FooterLink
 
 async def get_event(db:AsyncSession, event_id: int) -> Event | None:
     """
@@ -80,6 +81,14 @@ async def get_event_with_items(slug: str, db: AsyncSession) -> EventItemResponse
     event_slug = event.slug
     event_title = event.title
     hero_image_url = event.hero_image_url
+    footer_links = (
+        [
+            link if isinstance(link, FooterLink) else FooterLink(**link)
+            for link in event.footer_links
+        ]
+        if event.footer_links is not None
+        else None
+    )
     # Use default color scheme if not set
     color_scheme = ColorScheme(**event.color_scheme) if event.color_scheme else DEFAULT_COLOR_SCHEME
     
@@ -113,8 +122,49 @@ async def get_event_with_items(slug: str, db: AsyncSession) -> EventItemResponse
         title=event_title,
         hero_image_url=hero_image_url,
         color_scheme=color_scheme,
+        footer_links=footer_links,
         event_items=items_list
     )
+
+
+async def update_event(
+    db: AsyncSession,
+    event_id: int,
+    event_data: EventUpdate,
+) -> Event | None:
+    """
+    Update an event with the provided data.
+
+    Args:
+        db: The database session
+        event_id: The ID of the event to update
+        event_data: The partial update data
+
+    Returns:
+        The updated Event object if successful, or None if event not found
+
+    Raises:
+        SQLAlchemyError: If database operation fails
+    """
+    event = await get_event(db, event_id)
+    if not event:
+        return None
+
+    update_data = (
+        event_data.model_dump(exclude_unset=True)  # type: ignore[attr-defined]
+        if hasattr(event_data, "model_dump")
+        else event_data.dict(exclude_unset=True)
+    )
+    for field, value in update_data.items():
+        setattr(event, field, value)
+
+    try:
+        await db.commit()
+        await db.refresh(event)
+        return event
+    except SQLAlchemyError:
+        await db.rollback()
+        raise
 
 
 async def get_all_events(db: AsyncSession) -> list[dict]:
