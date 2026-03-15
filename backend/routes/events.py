@@ -1,17 +1,15 @@
 from typing import Annotated
-from fastapi import APIRouter, Depends, Request, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 
 from backend.db import get_db
 from backend.schema.event_item import (
-    GetEventItemsRequest, EventItemResponse, EventItemUpdate, 
-    EventItemDetail, EventsListResponse, EventSummary
+    EventItemResponse, EventItemUpdate, EventUpdate,
+    EventItemDetail,
 )
-from backend.models.event_item import Event_Item
 from backend.models.user import User
-from backend.services.events import get_event_with_items, get_all_events
+from backend.services.events import get_event_with_items, get_all_events, update_event
 from backend.services.event_items import update_event_item
 from backend.core.auth import require_admin
 
@@ -38,6 +36,36 @@ async def get_events(slug: str, db: AsyncSession = Depends(get_db)):
     return result
 
 
+@router.put("/{event_id}", response_model=EventItemResponse)
+async def update_event_route(
+    event_id: int,
+    event_update: EventUpdate,
+    _: Annotated[User, Depends(require_admin)],
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Update an event (admin only).
+
+    Requires admin role to access.
+    """
+    try:
+        updated = await update_event(db, event_id, event_update)
+
+        if not updated:
+            raise HTTPException(status_code=404, detail="Event not found")
+
+        result = await get_event_with_items(updated.slug, db)
+        if result is None:
+            raise HTTPException(status_code=404, detail="Event not found")
+
+        return result
+    except SQLAlchemyError:
+        raise HTTPException(
+            status_code=500,
+            detail="Database error occurred while updating event"
+        )
+
+
 @router.put("/{event_id}/items/{item_id}", response_model=EventItemDetail)
 async def update_event_item_route(
     event_id: int,
@@ -58,7 +86,7 @@ async def update_event_item_route(
             raise HTTPException(status_code=404, detail="Event item not found")
         
         return updated
-    except SQLAlchemyError as e:
+    except SQLAlchemyError:
         raise HTTPException(
             status_code=500,
             detail="Database error occurred while updating event item"

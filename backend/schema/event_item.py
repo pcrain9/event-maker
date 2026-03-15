@@ -11,6 +11,10 @@ class ColorScheme(BaseModel):
     text: str
     title_text: str
 
+class FooterLink(BaseModel):
+    link_title: str
+    href: str
+
 class EventSummary(BaseModel):
     """Schema for event summary in list responses."""
     id: int
@@ -59,6 +63,12 @@ class EventItemUpdate(BaseModel):
     class Config:
         from_attributes = True
 
+class EventUpdate(BaseModel):
+    footer_links: Optional[list[FooterLink]] = None
+
+    class Config:
+        from_attributes = True
+
 class EventItemResponse(BaseModel):
     """Schema for event item response - event with list of event items."""
     # Event fields
@@ -67,6 +77,7 @@ class EventItemResponse(BaseModel):
     title: str
     hero_image_url: Optional[str] = None
     color_scheme: ColorScheme
+    footer_links: Optional[list[FooterLink]] = None
     
     # List of event items
     event_items: list[EventItemDetail]

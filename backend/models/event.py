@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 from sqlalchemy import Integer, String, Identity, JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from ..db import Base
@@ -16,6 +16,7 @@ class Event(Base):
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     hero_image_url: Mapped[str] = mapped_column(String(255), nullable=True) 
     color_scheme: Mapped[dict] = mapped_column(JSON, nullable=False) 
+    footer_links: Mapped[Optional[list[dict]]] = mapped_column(JSON, nullable=True)
     
     # Relationship to Event_Item
     items: Mapped[list["Event_Item"]] = relationship("Event_Item", back_populates="event")

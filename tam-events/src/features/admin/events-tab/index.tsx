@@ -4,12 +4,14 @@ type EventsTabProps = {
   events: AdminEvent[];
   isLoading: boolean;
   error: string | null;
+  onEditEvent: (event: AdminEvent) => void;
 };
 
 export default function EventsTab({
   events,
   isLoading,
   error,
+  onEditEvent,
 }: EventsTabProps) {
   const totalSessions = events.reduce(
     (sum, event) => sum + event.itemsCount,
@@ -67,12 +69,21 @@ export default function EventsTab({
               <li key={event.id} className="admin__list-item">
                 <div>
                   <p className="admin__list-title">{event.title}</p>
+                  <p className="admin__muted">
+                    {event.footer_links?.length ?? 0} footer links
+                  </p>
                 </div>
                 <div className="admin__list-meta">
                   <span className="admin__pill" data-tone={event.status}>
                     {event.status}
                   </span>
                   <span className="admin__count">{event.itemsCount} items</span>
+                  <button
+                    className="admin__button admin__button--ghost"
+                    onClick={() => onEditEvent(event)}
+                  >
+                    Edit
+                  </button>
                 </div>
               </li>
             ))}

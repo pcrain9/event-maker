@@ -12,6 +12,7 @@ export default function LayoutShell({
   subtitle,
   navItems = [],
   notices = [],
+  footerLinks = null,
   announcementStorageScope = "guest",
   heroImageUrl: _heroImageUrl, // Accept but not used yet
   heroAction,
@@ -114,10 +115,24 @@ export default function LayoutShell({
       <main className="layout__content">{children}</main>
 
       <footer className="layout__footer">
-        <p>TAM Conference Program. Curated moments, clear schedules.</p>
+        {footerLinks && footerLinks.length > 0 ? (
+          <nav className="layout__footer-links" aria-label="Footer links">
+            {footerLinks.map((link) => (
+              <a
+                key={`${link.link_title}-${link.href}`}
+                className="layout__footer-link"
+                href={link.href}
+                target="_blank"
+                rel="noreferrer noopener"
+              >
+                {link.link_title}
+              </a>
+            ))}
+          </nav>
+        ) : null}
         <div className="layout__footer-meta">
-          <span>Contact: tam-events@conference.org</span>
-          <span>Last updated: Feb 7, 2026</span>
+          <span>Contact: admin@texasmuseums.org</span>
+          <span>817.332.1177</span>
         </div>
       </footer>
     </div>
