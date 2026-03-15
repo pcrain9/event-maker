@@ -236,7 +236,9 @@ const buildScheduleDays = (items: EventItem[]): ScheduleDay[] => {
             title: item.title,
             room: item.location ?? "TBA",
             track: item.sponsor ?? null,
-            status: item.cancelled ? "cancelled" : getSessionStatus(sessionTime),
+            status: item.cancelled
+              ? "cancelled"
+              : getSessionStatus(sessionTime),
             speakers: item.speakers ?? null,
             description: item.description ?? null,
           };
@@ -364,6 +366,7 @@ export default function HomeRoute() {
       subtitle="Browse the program, jump into highlighted sessions, and keep an eye on room shifts as they roll in."
       navItems={navItems}
       notices={notices}
+      footerLinks={eventData?.footer_links ?? null}
       announcementStorageScope={announcementStorageScope}
       heroImageUrl={heroImageUrl}
       heroAction={

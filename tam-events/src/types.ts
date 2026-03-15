@@ -27,6 +27,7 @@ export type LayoutShellProps = {
   subtitle: string;
   navItems?: LayoutNavItem[];
   notices?: LayoutNotice[];
+  footerLinks?: FooterLink[] | null;
   announcementStorageScope?: string;
   heroImageUrl?: string | null;
   heroAction?: ReactNode;
@@ -89,6 +90,15 @@ export type EventItemUpdate = {
   slides?: string[] | null;
 };
 
+export type FooterLink = {
+  link_title: string;
+  href: string;
+};
+
+export type EventUpdate = {
+  footer_links?: FooterLink[] | null;
+};
+
 export type AdminTab = "events" | "eventItems" | "announcements";
 
 export type AdminEvent = {
@@ -97,6 +107,7 @@ export type AdminEvent = {
   title: string;
   status: "live" | "draft" | "archived";
   itemsCount: number;
+  footer_links?: FooterLink[] | null;
 };
 
 export type AdminEventItem = {
@@ -158,6 +169,7 @@ export type EventResponse = {
   hero_image_url?: string | null;
   color_scheme: ThemeColors;
   event_items: EventItem[];
+  footer_links?: FooterLink[] | null;
 };
 
 export type EventIdsResponse = {

@@ -40,11 +40,27 @@ async def seed_event_database():
             {
                 "title": "TAM Annual Meeting 2025",
                 "slug": "austin-2025",
+                "footer_links": [
+                    {
+                        "link_title": "Venue Map",
+                        "href": "https://example.com/austin-2025/venue-map",
+                    },
+                    {
+                        "link_title": "Conference FAQ",
+                        "href": "https://example.com/austin-2025/faq",
+                    },
+                ],
                 "items": EVENT_ITEMS_2025,
             },
             {
                 "title": "Test Event",
                 "slug": "test-event",
+                "footer_links": [
+                    {
+                        "link_title": "Parking Details",
+                        "href": "https://example.com/test-event/parking",
+                    },
+                ],
                 "items": TEST_EVENT_ITEMS,
             },
         ]
@@ -64,6 +80,7 @@ async def seed_event_database():
                 slug=event_data["slug"],
                 hero_image_url=None,
                 color_scheme=color_scheme,
+                footer_links=event_data.get("footer_links"),
             )
             session.add(event)
             await session.flush()  # Flush to get event.id for related items.
