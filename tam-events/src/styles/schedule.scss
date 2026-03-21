@@ -137,10 +137,7 @@
   flex-direction: column;
   gap: 0.8rem;
   padding: 1.1rem 1.3rem;
-  border-radius: 1rem;
-  background: var(--card);
-  border: 1px solid var(--line);
-  box-shadow: var(--shadow);
+  border-bottom: 1px dotted var(--line);
 }
 
 .schedule__summary {
