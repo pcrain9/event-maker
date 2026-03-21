@@ -1,15 +1,28 @@
-from pydantic import BaseModel
-from typing import Optional
+from pydantic import BaseModel, model_validator
+from typing import Any, Optional
 from datetime import datetime
 
 class ColorScheme(BaseModel):
     primary: str
     secondary: str
-    tertiary: str
     background: str
-    alt_background: str
     text: str
-    title_text: str
+    heading: Optional[str] = None
+    alt_background: Optional[str] = None
+
+    model_config = {"extra": "ignore"}
+
+    @model_validator(mode="before")
+    @classmethod
+    def migrate_legacy_fields(cls, data: Any) -> Any:
+        if isinstance(data, dict):
+            # Map old title_text -> heading for backward compatibility
+            if "heading" not in data and "title_text" in data:
+                data = {**data, "heading": data["title_text"]}
+            # Provide a default heading if still missing
+            if not data.get("heading"):
+                data = {**data, "heading": data.get("text", "#141414")}
+        return data
 
 class FooterLink(BaseModel):
     link_title: str
@@ -89,6 +102,7 @@ class EventItemUpdate(BaseModel):
 
 class EventUpdate(BaseModel):
     footer_links: Optional[list[FooterLink]] = None
+    color_scheme: Optional[ColorScheme] = None
 
     class Config:
         from_attributes = True

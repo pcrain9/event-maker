@@ -1,12 +1,12 @@
 from backend.schema.event_item import ColorScheme
 
 
+# Stronger Together brand palette
 DEFAULT_COLOR_SCHEME = ColorScheme(
-        primary="#000000",
-        secondary="#666666",
-        tertiary="#999999",
-        background="#FFFFFF",
-        alt_background="#F5F5F5",
-        text="#000000",
-        title_text="#000000"
-    )
+    primary="#437d48",      # Green - primary action
+    secondary="#f2ccdf",    # Pink - secondary accent
+    background="#f7f2cb",   # Pale yellow - page background
+    text="#141414",         # Black - body text
+    heading="#141414",      # Black - heading text
+    alt_background="#a8bde1"  # Light blue - card/alternate background
+)

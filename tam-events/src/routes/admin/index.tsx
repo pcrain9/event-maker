@@ -46,7 +46,12 @@ export default function AdminRoute() {
   const toast = useToast();
   const tab = normalizeAdminTab(searchParams.get("tab"));
   const [activeModal, setActiveModal] = useState<
-    "event-item" | "announcement" | "event" | "event-create" | "admin-user" | null
+    | "event-item"
+    | "announcement"
+    | "event"
+    | "event-create"
+    | "admin-user"
+    | null
   >(null);
   const [selectedEvent, setSelectedEvent] = useState<AdminEvent | null>(null);
   const [selectedItem, setSelectedItem] = useState<AdminEventItem | null>(null);
@@ -98,9 +103,13 @@ export default function AdminRoute() {
               status: itemsCount > 0 ? "live" : "draft",
               itemsCount,
               footer_links: detail.footer_links,
+              color_scheme: detail.color_scheme,
             } satisfies AdminEvent;
           } catch (error) {
-            console.error(`Failed to fetch event details for ${event.slug}:`, error);
+            console.error(
+              `Failed to fetch event details for ${event.slug}:`,
+              error,
+            );
             return {
               id: event.id,
               slug: event.slug,
@@ -108,6 +117,7 @@ export default function AdminRoute() {
               status: "draft",
               itemsCount: 0,
               footer_links: null,
+              color_scheme: undefined,
             } satisfies AdminEvent;
           }
         }),
@@ -217,6 +227,7 @@ export default function AdminRoute() {
           ? {
               ...event,
               footer_links: updatedEvent.footer_links,
+              color_scheme: updatedEvent.color_scheme,
             }
           : event,
       ),

@@ -250,14 +250,57 @@ const buildScheduleDays = (items: EventItem[]): ScheduleDay[] => {
 
 const applyColorScheme = (scheme: ThemeColors) => {
   const root = document.documentElement;
+
+  // Core color tokens
   root.style.setProperty("--bg", scheme.background);
-  root.style.setProperty("--bg-alt", scheme.alt_background);
   root.style.setProperty("--ink", scheme.text);
-  root.style.setProperty("--muted", scheme.secondary);
   root.style.setProperty("--accent", scheme.primary);
+  root.style.setProperty("--muted", scheme.secondary);
   root.style.setProperty("--accent-soft", scheme.secondary);
-  root.style.setProperty("--line", scheme.tertiary);
-  root.style.setProperty("--card", scheme.alt_background);
+
+  // Derive accent-deep from primary (darker shade for hover/active states)
+  const accentDeep = dimColor(scheme.primary, 0.8);
+  root.style.setProperty("--accent-deep", accentDeep);
+
+  // Alt background
+  const altBg = scheme.alt_background || deriveAltBackground(scheme.background);
+  root.style.setProperty("--bg-alt", altBg);
+  root.style.setProperty("--card", altBg);
+
+  // Border/line
+  root.style.setProperty("--line", scheme.secondary);
+
+  // Override glow/gradient variables so the base warm theme doesn't bleed through
+  const glow1 = deriveAltBackground(scheme.background);
+  const glow2 = deriveAltBackground(altBg);
+  root.style.setProperty("--bg-glow-1", glow1);
+  root.style.setProperty("--bg-glow-2", glow2);
+  root.style.setProperty(
+    "--card-accent",
+    `linear-gradient(120deg, ${altBg} 0%, ${glow2} 100%)`,
+  );
+  root.style.setProperty(
+    "--preview-card",
+    `linear-gradient(140deg, ${altBg} 0%, ${glow1} 100%)`,
+  );
+};
+
+// Helper: derive a darker shade of a hex color
+const dimColor = (hex: string, factor: number): string => {
+  const num = parseInt(hex.replace("#", ""), 16);
+  const r = Math.max(0, Math.floor(((num >> 16) & 255) * factor));
+  const g = Math.max(0, Math.floor(((num >> 8) & 255) * factor));
+  const b = Math.max(0, Math.floor((num & 255) * factor));
+  return "#" + [r, g, b].map((x) => x.toString(16).padStart(2, "0")).join("");
+};
+
+// Helper: derive a subtle alt background from base background
+const deriveAltBackground = (bgColor: string): string => {
+  const num = parseInt(bgColor.replace("#", ""), 16);
+  const r = Math.min(255, Math.floor(((num >> 16) & 255) * 0.95));
+  const g = Math.min(255, Math.floor(((num >> 8) & 255) * 0.95));
+  const b = Math.min(255, Math.floor((num & 255) * 0.95));
+  return "#" + [r, g, b].map((x) => x.toString(16).padStart(2, "0")).join("");
 };
 
 export default function HomeRoute() {
