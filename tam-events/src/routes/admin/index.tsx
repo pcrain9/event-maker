@@ -4,14 +4,17 @@ import { useAuthStore } from "../../auth/store/authStore";
 import AdminLayout from "../../features/admin/admin-layout";
 import AnnouncementsTab from "../../features/admin/announcements-tab";
 import AnnouncementModal from "../../features/admin/announcement-modal";
+import AdminUserModal from "../../features/admin/admin-user-modal";
 import EventModal from "../../features/admin/event-modal";
 import EventItemsTab, {
   type EventItemsTabRef,
 } from "../../features/admin/event-items-tab";
 import EventItemModal from "../../features/admin/event-item-modal";
 import EventsTab from "../../features/admin/events-tab";
+import UsersTab from "../../features/admin/users-tab";
 import { getEventBySlug, getEvents } from "../../api";
 import type {
+  AdminUser,
   AdminEvent,
   AdminEventItem,
   AdminAnnouncement,
@@ -25,7 +28,8 @@ const normalizeAdminTab = (value: string | null): AdminTab => {
   if (
     value === "events" ||
     value === "eventItems" ||
-    value === "announcements"
+    value === "announcements" ||
+    value === "users"
   ) {
     return value;
   }
@@ -39,13 +43,17 @@ export default function AdminRoute() {
   const logout = useAuthStore((state) => state.logout);
   const tab = normalizeAdminTab(searchParams.get("tab"));
   const [activeModal, setActiveModal] = useState<
-    "event-item" | "announcement" | "event" | null
+    "event-item" | "announcement" | "event" | "admin-user" | null
   >(null);
   const [selectedEvent, setSelectedEvent] = useState<AdminEvent | null>(null);
   const [selectedItem, setSelectedItem] = useState<AdminEventItem | null>(null);
   const [selectedAnnouncement, setSelectedAnnouncement] =
     useState<AdminAnnouncement | null>(null);
+  const [selectedAdminUser, setSelectedAdminUser] = useState<AdminUser | null>(
+    null,
+  );
   const [announcementsRefreshKey, setAnnouncementsRefreshKey] = useState(0);
+  const [usersRefreshKey, setUsersRefreshKey] = useState(0);
   const eventItemsTabRef = useRef<EventItemsTabRef>(null);
   const [events, setEvents] = useState<AdminEvent[]>([]);
   const [isEventsLoading, setIsEventsLoading] = useState(true);
@@ -56,6 +64,7 @@ export default function AdminRoute() {
       events: "Events",
       eventItems: "Event Items",
       announcements: "Announcements",
+      users: "Users",
     };
 
     document.title = `${tabLabelByKey[tab]} | Admin | TAM Events`;
@@ -96,7 +105,10 @@ export default function AdminRoute() {
                 footer_links: detail.footer_links,
               } satisfies AdminEvent;
             } catch (error) {
-              console.error(`Failed to fetch event details for ${event.slug}:`, error);
+              console.error(
+                `Failed to fetch event details for ${event.slug}:`,
+                error,
+              );
               return {
                 id: event.id,
                 slug: event.slug,
@@ -157,6 +169,7 @@ export default function AdminRoute() {
         setSelectedEvent(null);
         setSelectedItem(null);
         setSelectedAnnouncement(null);
+        setSelectedAdminUser(null);
       }
     };
 
@@ -185,11 +198,17 @@ export default function AdminRoute() {
     setActiveModal("announcement");
   };
 
+  const openAdminUserModal = (adminUser?: AdminUser) => {
+    setSelectedAdminUser(adminUser ?? null);
+    setActiveModal("admin-user");
+  };
+
   const closeModal = () => {
     setActiveModal(null);
     setSelectedEvent(null);
     setSelectedItem(null);
     setSelectedAnnouncement(null);
+    setSelectedAdminUser(null);
   };
 
   const handleEventSave = (updatedEvent: EventResponse) => {
@@ -247,6 +266,14 @@ export default function AdminRoute() {
             refreshKey={announcementsRefreshKey}
           />
         )}
+        {tab === "users" && (
+          <UsersTab
+            onNewUser={() => openAdminUserModal()}
+            onEditUser={(adminUser) => openAdminUserModal(adminUser)}
+            currentUserId={user?.id}
+            refreshKey={usersRefreshKey}
+          />
+        )}
       </AdminLayout>
 
       <EventItemModal
@@ -276,6 +303,14 @@ export default function AdminRoute() {
         selectedAnnouncement={selectedAnnouncement}
         onSave={() => {
           setAnnouncementsRefreshKey((current) => current + 1);
+        }}
+      />
+      <AdminUserModal
+        isOpen={activeModal === "admin-user"}
+        onClose={closeModal}
+        selectedUser={selectedAdminUser}
+        onSave={() => {
+          setUsersRefreshKey((current) => current + 1);
         }}
       />
     </>

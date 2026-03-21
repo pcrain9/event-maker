@@ -99,7 +99,7 @@ export type EventUpdate = {
   footer_links?: FooterLink[] | null;
 };
 
-export type AdminTab = "events" | "eventItems" | "announcements";
+export type AdminTab = "events" | "eventItems" | "announcements" | "users";
 
 export type AdminEvent = {
   id: number;
@@ -187,7 +187,32 @@ export type UserResponse = {
   username: string;
   full_name: string | null;
   is_active: boolean;
+  role: string;
   created_at: string;
+};
+
+export type AdminUser = {
+  id: number;
+  username: string;
+  full_name: string | null;
+  is_active: boolean;
+  role: "admin";
+  created_at: string;
+};
+
+export type AdminUserCreate = {
+  username: string;
+  password: string;
+  full_name?: string | null;
+  is_active?: boolean;
+};
+
+export type AdminUserUpdate = {
+  username?: string;
+  full_name?: string | null;
+  is_active?: boolean;
+  current_password?: string;
+  new_password?: string;
 };
 
 export type LoginResponse = {
