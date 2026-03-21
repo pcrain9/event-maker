@@ -24,6 +24,30 @@ class EventSummary(BaseModel):
     class Config:
         from_attributes = True
 
+
+class EventCreate(BaseModel):
+    """Schema for creating a new event."""
+    slug: str
+    title: str
+    hero_image_url: Optional[str] = None
+    color_scheme: ColorScheme
+
+    class Config:
+        from_attributes = True
+
+
+class EventAdminResponse(BaseModel):
+    """Schema for create/update event responses in admin flows."""
+    id: int
+    slug: str
+    title: str
+    hero_image_url: Optional[str] = None
+    color_scheme: ColorScheme
+    footer_links: Optional[list[FooterLink]] = None
+
+    class Config:
+        from_attributes = True
+
 class EventsListResponse(BaseModel):
     """Schema for list of events response."""
     events: list[EventSummary]
