@@ -4,14 +4,18 @@ type EventsTabProps = {
   events: AdminEvent[];
   isLoading: boolean;
   error: string | null;
+  onNewEvent: () => void;
   onEditEvent: (event: AdminEvent) => void;
+  onDeleteEvent: (event: AdminEvent) => void;
 };
 
 export default function EventsTab({
   events,
   isLoading,
   error,
+  onNewEvent,
   onEditEvent,
+  onDeleteEvent,
 }: EventsTabProps) {
   const totalSessions = events.reduce(
     (sum, event) => sum + event.itemsCount,
@@ -28,9 +32,9 @@ export default function EventsTab({
           </p>
         </div>
         <div className="admin__actions">
-          {/* <button className="admin__button admin__button--ghost">
+          <button className="admin__button admin__button--primary" onClick={onNewEvent}>
             New event
-          </button> */}
+          </button>
         </div>
       </div>
 
@@ -83,6 +87,12 @@ export default function EventsTab({
                     onClick={() => onEditEvent(event)}
                   >
                     Edit
+                  </button>
+                  <button
+                    className="admin__button admin__button--ghost"
+                    onClick={() => onDeleteEvent(event)}
+                  >
+                    Delete
                   </button>
                 </div>
               </li>
