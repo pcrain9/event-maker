@@ -100,6 +100,22 @@ export type EventUpdate = {
   footer_links?: FooterLink[] | null;
 };
 
+export type EventCreate = {
+  slug: string;
+  title: string;
+  hero_image_url?: string | null;
+  color_scheme: ThemeColors;
+};
+
+export type EventAdminResponse = {
+  id: number;
+  slug: string;
+  title: string;
+  hero_image_url?: string | null;
+  color_scheme: ThemeColors;
+  footer_links?: FooterLink[] | null;
+};
+
 export type AdminTab = "events" | "eventItems" | "announcements" | "users";
 
 export type AdminEvent = {

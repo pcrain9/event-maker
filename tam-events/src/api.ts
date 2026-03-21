@@ -3,6 +3,8 @@ import type {
   AdminUser,
   AdminUserCreate,
   AdminUserUpdate,
+  EventCreate,
+  EventAdminResponse,
   EventIdsResponse,
   EventResponse,
   LoginResponse,
@@ -185,6 +187,26 @@ export const updateEvent = async (
     data,
   );
   return response.data;
+};
+
+/**
+ * Create an event - ADMIN ONLY
+ */
+export const createEvent = async (
+  data: EventCreate,
+): Promise<EventAdminResponse> => {
+  const response = await authenticatedClient.post<EventAdminResponse>(
+    `/events/`,
+    data,
+  );
+  return response.data;
+};
+
+/**
+ * Delete an event - ADMIN ONLY
+ */
+export const deleteEvent = async (eventId: number): Promise<void> => {
+  await authenticatedClient.delete(`/events/${eventId}`);
 };
 
 /**
