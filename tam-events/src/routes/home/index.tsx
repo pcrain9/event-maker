@@ -225,6 +225,7 @@ const buildScheduleDays = (items: EventItem[]): ScheduleDay[] => {
         );
 
       return {
+        isoDate: key,
         label: formatDayLabel(dayDate),
         date: formatDayDate(dayDate),
         focus: "Program updates and sessions",
@@ -277,6 +278,14 @@ export default function HomeRoute() {
     () => buildScheduleDays(eventData?.event_items ?? dummyEventItems),
     [eventData],
   );
+  const openDayIndex = useMemo(() => {
+    const todayIsoDate = new Date().toISOString().split("T")[0];
+    const todayIndex = scheduleDays.findIndex(
+      (day) => day.isoDate === todayIsoDate,
+    );
+
+    return todayIndex >= 0 ? todayIndex : 0;
+  }, [scheduleDays]);
   const navItems = [
     { label: "Events", href: "?tab=events", isActive: tab === "events" },
     { label: "Sponsors", href: "?tab=sponsors", isActive: tab === "sponsors" },
@@ -399,7 +408,11 @@ export default function HomeRoute() {
               <ScheduleSkeleton />
             ) : (
               scheduleDays.map((day, index) => (
-                <Schedule key={day.label} day={day} defaultOpen={index === 0} />
+                <Schedule
+                  key={day.isoDate}
+                  day={day}
+                  defaultOpen={index === openDayIndex}
+                />
               ))
             )}
           </div>

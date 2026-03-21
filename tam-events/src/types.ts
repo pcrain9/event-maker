@@ -52,6 +52,7 @@ export type ScheduleSession = {
 };
 
 export type ScheduleDay = {
+  isoDate: string;
   label: string;
   date: string;
   focus: string;
