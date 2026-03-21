@@ -6,7 +6,14 @@ from backend import db
 from backend.constants import DEFAULT_COLOR_SCHEME
 from backend.models.event import Event
 from backend.models.event_item import Event_Item
-from backend.schema.event_item import EventItemResponse, EventItemDetail, ColorScheme, EventUpdate, FooterLink
+from backend.schema.event_item import (
+    EventItemResponse,
+    EventItemDetail,
+    ColorScheme,
+    EventUpdate,
+    FooterLink,
+    EventCreate,
+)
 
 async def get_event(db:AsyncSession, event_id: int) -> Event | None:
     """
@@ -162,6 +169,68 @@ async def update_event(
         await db.commit()
         await db.refresh(event)
         return event
+    except SQLAlchemyError:
+        await db.rollback()
+        raise
+
+
+async def create_event(db: AsyncSession, event_data: EventCreate) -> Event:
+    """
+    Create a new event.
+
+    Args:
+        db: The database session
+        event_data: Event creation payload
+
+    Returns:
+        The created Event object
+
+    Raises:
+        SQLAlchemyError: If database operation fails
+    """
+    event = Event(
+        slug=event_data.slug,
+        title=event_data.title,
+        hero_image_url=event_data.hero_image_url,
+        color_scheme=(
+            event_data.color_scheme.model_dump()  # type: ignore[attr-defined]
+            if hasattr(event_data.color_scheme, "model_dump")
+            else event_data.color_scheme.dict()
+        ),
+    )
+    db.add(event)
+
+    try:
+        await db.commit()
+        await db.refresh(event)
+        return event
+    except SQLAlchemyError:
+        await db.rollback()
+        raise
+
+
+async def delete_event(db: AsyncSession, event_id: int) -> bool:
+    """
+    Delete an event by id.
+
+    Args:
+        db: The database session
+        event_id: The id of the event to delete
+
+    Returns:
+        True when deleted, False when not found
+
+    Raises:
+        SQLAlchemyError: If database operation fails
+    """
+    event = await get_event(db, event_id)
+    if not event:
+        return False
+
+    try:
+        await db.delete(event)
+        await db.commit()
+        return True
     except SQLAlchemyError:
         await db.rollback()
         raise
