@@ -12,7 +12,23 @@ class UserResponse(BaseModel):
     username: str
     full_name: str | None = None
     is_active: bool
+    role: str
     created_at: datetime
+
+
+class AdminUserCreate(BaseModel):
+    username: str = Field(min_length=1, max_length=255)
+    password: str = Field(min_length=1)
+    full_name: str | None = Field(default=None, max_length=255)
+    is_active: bool = True
+
+
+class AdminUserUpdate(BaseModel):
+    username: str | None = Field(default=None, min_length=1, max_length=255)
+    full_name: str | None = Field(default=None, max_length=255)
+    is_active: bool | None = None
+    current_password: str | None = None
+    new_password: str | None = Field(default=None, min_length=1)
 
 
 class LoginResponse(BaseModel):
