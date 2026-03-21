@@ -84,6 +84,7 @@
 .admin__panel-header {
   display: flex;
   flex-direction: column;
+  align-items:center;
   gap: 1.25rem;
   margin-bottom: 2rem;
 }
@@ -109,6 +110,20 @@
 .admin__button:hover {
   transform: translateY(-1px);
   border-color: rgb(var(--accent-rgb) / 0.6);
+}
+
+.admin__button:disabled,
+.admin__button[disabled] {
+  cursor: not-allowed;
+  opacity: 0.55;
+  transform: none;
+  box-shadow: none;
+}
+
+.admin__button:disabled:hover,
+.admin__button[disabled]:hover {
+  transform: none;
+  border-color: var(--line);
 }
 
 .admin__button--primary {

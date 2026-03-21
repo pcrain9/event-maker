@@ -10,11 +10,24 @@ from sqlalchemy.exc import SQLAlchemyError, OperationalError, TimeoutError as SQ
 
 from backend.core.auth import (
     get_current_user,
+    require_admin,
     JWT_SECRET_KEY,
     JWT_ALGORITHM,
     JWT_EXPIRATION_HOURS
 )
-from backend.schema.user import LoginResponse, UserResponse
+from backend.schema.user import (
+    AdminUserCreate,
+    AdminUserUpdate,
+    LoginResponse,
+    UserResponse,
+)
+from backend.services.users import (
+    AdminUserValidationError,
+    create_admin_user,
+    delete_admin_user,
+    list_admin_users,
+    update_admin_user,
+)
 from ..db import get_db
 from ..models.user import User
 
@@ -103,3 +116,56 @@ async def login(
 @router.get("/me", response_model=UserResponse)
 async def read_users_me(current_user: Annotated[User, Depends(get_current_user)]):
     return current_user
+
+
+@router.get("/admins", response_model=list[UserResponse])
+async def read_admin_users(
+    _: Annotated[User, Depends(require_admin)],
+    db: AsyncSession = Depends(get_db),
+):
+    users = await list_admin_users(db)
+    return users
+
+
+@router.post("/admins", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+async def create_admin_user_route(
+    payload: AdminUserCreate,
+    _: Annotated[User, Depends(require_admin)],
+    db: AsyncSession = Depends(get_db),
+):
+    try:
+        user = await create_admin_user(db, payload)
+        return user
+    except AdminUserValidationError as exc:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc))
+
+
+@router.put("/admins/{user_id}", response_model=UserResponse)
+async def update_admin_user_route(
+    user_id: int,
+    payload: AdminUserUpdate,
+    _: Annotated[User, Depends(require_admin)],
+    db: AsyncSession = Depends(get_db),
+):
+    try:
+        user = await update_admin_user(db, user_id, payload)
+        if not user:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Admin user not found")
+        return user
+    except AdminUserValidationError as exc:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc))
+
+
+@router.delete("/admins/{user_id}")
+async def delete_admin_user_route(
+    user_id: int,
+    current_user: Annotated[User, Depends(require_admin)],
+    db: AsyncSession = Depends(get_db),
+):
+    try:
+        deleted = await delete_admin_user(db, user_id, current_user.id)
+        if not deleted:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Admin user not found")
+        return {"message": "Admin user deleted successfully"}
+    except AdminUserValidationError as exc:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc))
