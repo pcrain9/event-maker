@@ -4,7 +4,7 @@
 
 .landing-page {
   min-height: 100vh;
-  background: #fff;
+  background: var(--bg);
   display: flex;
   flex-direction: column;
 }
@@ -15,7 +15,7 @@
   align-items: center;
   justify-content: center;
   padding: 60px 24px;
-  background: #f9f9f9;
+  background: var(--bg-glow-1);
 }
 
 .landing-page__error-content {
@@ -25,13 +25,13 @@
   h2 {
     font-size: 24px;
     font-weight: 600;
-    color: #1a1a1a;
+    color: var(--ink);
     margin: 0 0 12px 0;
   }
 
   p {
     font-size: 16px;
-    color: #666;
+    color: var(--muted);
     margin: 0;
     line-height: 1.6;
   }

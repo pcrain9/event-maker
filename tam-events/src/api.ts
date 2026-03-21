@@ -1,5 +1,10 @@
 import axios, { AxiosError } from "axios";
 import type {
+  AdminUser,
+  AdminUserCreate,
+  AdminUserUpdate,
+  EventCreate,
+  EventAdminResponse,
   EventIdsResponse,
   EventResponse,
   LoginResponse,
@@ -185,6 +190,26 @@ export const updateEvent = async (
 };
 
 /**
+ * Create an event - ADMIN ONLY
+ */
+export const createEvent = async (
+  data: EventCreate,
+): Promise<EventAdminResponse> => {
+  const response = await authenticatedClient.post<EventAdminResponse>(
+    `/events/`,
+    data,
+  );
+  return response.data;
+};
+
+/**
+ * Delete an event - ADMIN ONLY
+ */
+export const deleteEvent = async (eventId: number): Promise<void> => {
+  await authenticatedClient.delete(`/events/${eventId}`);
+};
+
+/**
  * Fetch all announcements for a specific event - PUBLIC
  *
  * @param eventId - The ID of the event to fetch announcements for
@@ -249,4 +274,46 @@ export const deleteAnnouncement = async (
   announcementId: number,
 ): Promise<void> => {
   await authenticatedClient.delete(`/announcements/${announcementId}`);
+};
+
+/**
+ * Fetch all admin users - ADMIN ONLY
+ */
+export const getAdminUsers = async (): Promise<AdminUser[]> => {
+  const response = await authenticatedClient.get<AdminUser[]>(`/users/admins`);
+  return response.data;
+};
+
+/**
+ * Create a new admin user - ADMIN ONLY
+ */
+export const createAdminUser = async (
+  data: AdminUserCreate,
+): Promise<AdminUser> => {
+  const response = await authenticatedClient.post<AdminUser>(
+    `/users/admins`,
+    data,
+  );
+  return response.data;
+};
+
+/**
+ * Update an existing admin user - ADMIN ONLY
+ */
+export const updateAdminUser = async (
+  userId: number,
+  data: AdminUserUpdate,
+): Promise<AdminUser> => {
+  const response = await authenticatedClient.put<AdminUser>(
+    `/users/admins/${userId}`,
+    data,
+  );
+  return response.data;
+};
+
+/**
+ * Delete an admin user - ADMIN ONLY
+ */
+export const deleteAdminUser = async (userId: number): Promise<void> => {
+  await authenticatedClient.delete(`/users/admins/${userId}`);
 };

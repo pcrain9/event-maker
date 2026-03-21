@@ -1,15 +1,25 @@
 from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from backend.db import get_db
 from backend.schema.event_item import (
-    EventItemResponse, EventItemUpdate, EventUpdate,
+    EventAdminResponse,
+    EventCreate,
+    EventItemResponse,
+    EventItemUpdate,
+    EventUpdate,
     EventItemDetail,
 )
 from backend.models.user import User
-from backend.services.events import get_event_with_items, get_all_events, update_event
+from backend.services.events import (
+    create_event,
+    delete_event,
+    get_event_with_items,
+    get_all_events,
+    update_event,
+)
 from backend.services.event_items import update_event_item
 from backend.core.auth import require_admin
 
@@ -34,6 +44,29 @@ async def get_events(slug: str, db: AsyncSession = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Event not found")
     
     return result
+
+
+@router.post("/", response_model=EventAdminResponse, status_code=201)
+async def create_event_route(
+    event_data: EventCreate,
+    _: Annotated[User, Depends(require_admin)],
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Create a new event (admin only).
+
+    Requires admin role to access.
+    """
+    try:
+        created = await create_event(db, event_data)
+        return created
+    except IntegrityError:
+        raise HTTPException(status_code=400, detail="Event slug already exists")
+    except SQLAlchemyError:
+        raise HTTPException(
+            status_code=500,
+            detail="Database error occurred while creating event",
+        )
 
 
 @router.put("/{event_id}", response_model=EventItemResponse)
@@ -90,4 +123,28 @@ async def update_event_item_route(
         raise HTTPException(
             status_code=500,
             detail="Database error occurred while updating event item"
+        )
+
+
+@router.delete("/{event_id}")
+async def delete_event_route(
+    event_id: int,
+    _: Annotated[User, Depends(require_admin)],
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Delete an event (admin only).
+
+    Requires admin role to access.
+    """
+    try:
+        deleted = await delete_event(db, event_id)
+        if not deleted:
+            raise HTTPException(status_code=404, detail="Event not found")
+
+        return {"message": "Event deleted successfully"}
+    except SQLAlchemyError:
+        raise HTTPException(
+            status_code=500,
+            detail="Database error occurred while deleting event",
         )

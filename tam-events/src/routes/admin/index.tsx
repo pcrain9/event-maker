@@ -1,17 +1,22 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuthStore } from "../../auth/store/authStore";
 import AdminLayout from "../../features/admin/admin-layout";
 import AnnouncementsTab from "../../features/admin/announcements-tab";
 import AnnouncementModal from "../../features/admin/announcement-modal";
+import AdminUserModal from "../../features/admin/admin-user-modal";
+import EventCreateModal from "../../features/admin/event-create-modal";
 import EventModal from "../../features/admin/event-modal";
+import { useToast } from "../../components/toast";
 import EventItemsTab, {
   type EventItemsTabRef,
 } from "../../features/admin/event-items-tab";
 import EventItemModal from "../../features/admin/event-item-modal";
 import EventsTab from "../../features/admin/events-tab";
-import { getEventBySlug, getEvents } from "../../api";
+import UsersTab from "../../features/admin/users-tab";
+import { deleteEvent, getEventBySlug, getEvents } from "../../api";
 import type {
+  AdminUser,
   AdminEvent,
   AdminEventItem,
   AdminAnnouncement,
@@ -25,7 +30,8 @@ const normalizeAdminTab = (value: string | null): AdminTab => {
   if (
     value === "events" ||
     value === "eventItems" ||
-    value === "announcements"
+    value === "announcements" ||
+    value === "users"
   ) {
     return value;
   }
@@ -37,15 +43,25 @@ export default function AdminRoute() {
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
+  const toast = useToast();
   const tab = normalizeAdminTab(searchParams.get("tab"));
   const [activeModal, setActiveModal] = useState<
-    "event-item" | "announcement" | "event" | null
+    | "event-item"
+    | "announcement"
+    | "event"
+    | "event-create"
+    | "admin-user"
+    | null
   >(null);
   const [selectedEvent, setSelectedEvent] = useState<AdminEvent | null>(null);
   const [selectedItem, setSelectedItem] = useState<AdminEventItem | null>(null);
   const [selectedAnnouncement, setSelectedAnnouncement] =
     useState<AdminAnnouncement | null>(null);
+  const [selectedAdminUser, setSelectedAdminUser] = useState<AdminUser | null>(
+    null,
+  );
   const [announcementsRefreshKey, setAnnouncementsRefreshKey] = useState(0);
+  const [usersRefreshKey, setUsersRefreshKey] = useState(0);
   const eventItemsTabRef = useRef<EventItemsTabRef>(null);
   const [events, setEvents] = useState<AdminEvent[]>([]);
   const [isEventsLoading, setIsEventsLoading] = useState(true);
@@ -56,6 +72,7 @@ export default function AdminRoute() {
       events: "Events",
       eventItems: "Event Items",
       announcements: "Announcements",
+      users: "Users",
     };
 
     document.title = `${tabLabelByKey[tab]} | Admin | TAM Events`;
@@ -66,78 +83,62 @@ export default function AdminRoute() {
     Array<{ id: number; slug: string; title: string }>
   >([]);
 
+  const fetchEventSlugs = useCallback(async () => {
+    setIsEventsLoading(true);
+
+    try {
+      const response = await getEvents();
+      setEventSlugs(response.events);
+
+      const eventsWithCounts = await Promise.all(
+        response.events.map(async (event) => {
+          try {
+            const detail = await getEventBySlug(event.slug);
+            const itemsCount = detail.event_items.length;
+
+            return {
+              id: event.id,
+              slug: event.slug,
+              title: event.title,
+              status: itemsCount > 0 ? "live" : "draft",
+              itemsCount,
+              footer_links: detail.footer_links,
+              color_scheme: detail.color_scheme,
+            } satisfies AdminEvent;
+          } catch (error) {
+            console.error(
+              `Failed to fetch event details for ${event.slug}:`,
+              error,
+            );
+            return {
+              id: event.id,
+              slug: event.slug,
+              title: event.title,
+              status: "draft",
+              itemsCount: 0,
+              footer_links: null,
+              color_scheme: undefined,
+            } satisfies AdminEvent;
+          }
+        }),
+      );
+
+      setEvents(eventsWithCounts);
+      setEventsError(null);
+    } catch (error) {
+      console.error("Failed to fetch event slugs:", error);
+      setEventSlugs([]);
+      setEvents([]);
+      setEventsError("Failed to load events.");
+    } finally {
+      setIsEventsLoading(false);
+    }
+  }, []);
+
   // Fetch event summaries and item counts on component mount
   useEffect(() => {
-    let isMounted = true;
-
-    const fetchEventSlugs = async () => {
-      setIsEventsLoading(true);
-
-      try {
-        const response = await getEvents();
-        if (!isMounted) {
-          return;
-        }
-
-        setEventSlugs(response.events);
-
-        const eventsWithCounts = await Promise.all(
-          response.events.map(async (event) => {
-            try {
-              const detail = await getEventBySlug(event.slug);
-              const itemsCount = detail.event_items.length;
-
-              return {
-                id: event.id,
-                slug: event.slug,
-                title: event.title,
-                status: itemsCount > 0 ? "live" : "draft",
-                itemsCount,
-                footer_links: detail.footer_links,
-              } satisfies AdminEvent;
-            } catch (error) {
-              console.error(`Failed to fetch event details for ${event.slug}:`, error);
-              return {
-                id: event.id,
-                slug: event.slug,
-                title: event.title,
-                status: "draft",
-                itemsCount: 0,
-                footer_links: null,
-              } satisfies AdminEvent;
-            }
-          }),
-        );
-
-        if (!isMounted) {
-          return;
-        }
-
-        setEvents(eventsWithCounts);
-        setEventsError(null);
-      } catch (error) {
-        console.error("Failed to fetch event slugs:", error);
-
-        if (!isMounted) {
-          return;
-        }
-
-        setEventSlugs([]);
-        setEvents([]);
-        setEventsError("Failed to load events.");
-      } finally {
-        if (isMounted) {
-          setIsEventsLoading(false);
-        }
-      }
-    };
-
-    fetchEventSlugs();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+    void fetchEventSlugs();
+  }, [fetchEventSlugs]);
 
   useEffect(() => {
     const current = searchParams.get("tab");
@@ -157,6 +158,7 @@ export default function AdminRoute() {
         setSelectedEvent(null);
         setSelectedItem(null);
         setSelectedAnnouncement(null);
+        setSelectedAdminUser(null);
       }
     };
 
@@ -180,9 +182,18 @@ export default function AdminRoute() {
     setActiveModal("event");
   };
 
+  const openEventCreateModal = () => {
+    setActiveModal("event-create");
+  };
+
   const openAnnouncementModal = (announcement?: AdminAnnouncement) => {
     setSelectedAnnouncement(announcement ?? null);
     setActiveModal("announcement");
+  };
+
+  const openAdminUserModal = (adminUser?: AdminUser) => {
+    setSelectedAdminUser(adminUser ?? null);
+    setActiveModal("admin-user");
   };
 
   const closeModal = () => {
@@ -190,6 +201,23 @@ export default function AdminRoute() {
     setSelectedEvent(null);
     setSelectedItem(null);
     setSelectedAnnouncement(null);
+    setSelectedAdminUser(null);
+  };
+
+  const handleDeleteEvent = async (event: AdminEvent) => {
+    const confirmed = window.confirm(`Delete event \"${event.title}\"?`);
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      await deleteEvent(event.id);
+      toast.success("Event deleted");
+      await fetchEventSlugs();
+    } catch (error) {
+      console.error("Failed to delete event", error);
+      toast.error("Failed to delete event");
+    }
   };
 
   const handleEventSave = (updatedEvent: EventResponse) => {
@@ -199,6 +227,7 @@ export default function AdminRoute() {
           ? {
               ...event,
               footer_links: updatedEvent.footer_links,
+              color_scheme: updatedEvent.color_scheme,
             }
           : event,
       ),
@@ -224,7 +253,9 @@ export default function AdminRoute() {
             events={events}
             isLoading={isEventsLoading}
             error={eventsError}
+            onNewEvent={openEventCreateModal}
             onEditEvent={openEventModal}
+            onDeleteEvent={handleDeleteEvent}
           />
         )}
         {tab === "eventItems" && (
@@ -245,6 +276,14 @@ export default function AdminRoute() {
             }
             eventSlugs={eventSlugs}
             refreshKey={announcementsRefreshKey}
+          />
+        )}
+        {tab === "users" && (
+          <UsersTab
+            onNewUser={() => openAdminUserModal()}
+            onEditUser={(adminUser) => openAdminUserModal(adminUser)}
+            currentUserId={user?.id}
+            refreshKey={usersRefreshKey}
           />
         )}
       </AdminLayout>
@@ -269,6 +308,14 @@ export default function AdminRoute() {
           handleEventSave(updatedEvent);
         }}
       />
+      <EventCreateModal
+        isOpen={activeModal === "event-create"}
+        onClose={closeModal}
+        onSave={() => {
+          closeModal();
+          void fetchEventSlugs();
+        }}
+      />
       <AnnouncementModal
         isOpen={activeModal === "announcement"}
         onClose={closeModal}
@@ -276,6 +323,14 @@ export default function AdminRoute() {
         selectedAnnouncement={selectedAnnouncement}
         onSave={() => {
           setAnnouncementsRefreshKey((current) => current + 1);
+        }}
+      />
+      <AdminUserModal
+        isOpen={activeModal === "admin-user"}
+        onClose={closeModal}
+        selectedUser={selectedAdminUser}
+        onSave={() => {
+          setUsersRefreshKey((current) => current + 1);
         }}
       />
     </>

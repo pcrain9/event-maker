@@ -52,6 +52,7 @@ export type ScheduleSession = {
 };
 
 export type ScheduleDay = {
+  isoDate: string;
   label: string;
   date: string;
   focus: string;
@@ -97,9 +98,26 @@ export type FooterLink = {
 
 export type EventUpdate = {
   footer_links?: FooterLink[] | null;
+  color_scheme?: ThemeColors;
 };
 
-export type AdminTab = "events" | "eventItems" | "announcements";
+export type EventCreate = {
+  slug: string;
+  title: string;
+  hero_image_url?: string | null;
+  color_scheme: ThemeColors;
+};
+
+export type EventAdminResponse = {
+  id: number;
+  slug: string;
+  title: string;
+  hero_image_url?: string | null;
+  color_scheme: ThemeColors;
+  footer_links?: FooterLink[] | null;
+};
+
+export type AdminTab = "events" | "eventItems" | "announcements" | "users";
 
 export type AdminEvent = {
   id: number;
@@ -108,6 +126,7 @@ export type AdminEvent = {
   status: "live" | "draft" | "archived";
   itemsCount: number;
   footer_links?: FooterLink[] | null;
+  color_scheme?: ThemeColors;
 };
 
 export type AdminEventItem = {
@@ -155,11 +174,10 @@ export type AnnouncementUpdate = {
 export type ThemeColors = {
   primary: string;
   secondary: string;
-  tertiary: string;
   background: string;
-  alt_background: string;
   text: string;
-  title_text: string;
+  heading: string;
+  alt_background?: string;
 };
 
 export type EventResponse = {
@@ -187,7 +205,32 @@ export type UserResponse = {
   username: string;
   full_name: string | null;
   is_active: boolean;
+  role: string;
   created_at: string;
+};
+
+export type AdminUser = {
+  id: number;
+  username: string;
+  full_name: string | null;
+  is_active: boolean;
+  role: "admin";
+  created_at: string;
+};
+
+export type AdminUserCreate = {
+  username: string;
+  password: string;
+  full_name?: string | null;
+  is_active?: boolean;
+};
+
+export type AdminUserUpdate = {
+  username?: string;
+  full_name?: string | null;
+  is_active?: boolean;
+  current_password?: string;
+  new_password?: string;
 };
 
 export type LoginResponse = {

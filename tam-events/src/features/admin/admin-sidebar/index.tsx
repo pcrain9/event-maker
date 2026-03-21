@@ -9,6 +9,7 @@ const tabs: Array<{ key: AdminTab; label: string }> = [
   { key: "events", label: "Events" },
   { key: "eventItems", label: "Event Items" },
   { key: "announcements", label: "Announcements" },
+  { key: "users", label: "Users" },
 ];
 
 export default function AdminSidebar({
