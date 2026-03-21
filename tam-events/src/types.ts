@@ -98,6 +98,7 @@ export type FooterLink = {
 
 export type EventUpdate = {
   footer_links?: FooterLink[] | null;
+  color_scheme?: ThemeColors;
 };
 
 export type EventCreate = {
@@ -125,6 +126,7 @@ export type AdminEvent = {
   status: "live" | "draft" | "archived";
   itemsCount: number;
   footer_links?: FooterLink[] | null;
+  color_scheme?: ThemeColors;
 };
 
 export type AdminEventItem = {
@@ -172,11 +174,10 @@ export type AnnouncementUpdate = {
 export type ThemeColors = {
   primary: string;
   secondary: string;
-  tertiary: string;
   background: string;
-  alt_background: string;
   text: string;
-  title_text: string;
+  heading: string;
+  alt_background?: string;
 };
 
 export type EventResponse = {

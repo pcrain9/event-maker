@@ -10,13 +10,12 @@ type EventCreateModalProps = {
 };
 
 const DEFAULT_COLORS: ThemeColors = {
-  primary: "#0f172a",
-  secondary: "#1e293b",
-  tertiary: "#334155",
-  background: "#f8fafc",
-  alt_background: "#e2e8f0",
-  text: "#0f172a",
-  title_text: "#020617",
+  primary: "#437d48",
+  secondary: "#f2ccdf",
+  background: "#f7f2cb",
+  text: "#141414",
+  heading: "#141414",
+  alt_background: "#a8bde1",
 };
 
 function slugify(value: string): string {
@@ -196,15 +195,6 @@ export default function EventCreateModal({
 
             <div className="form__row">
               <label className="form__field form__field--color">
-                <span>Tertiary</span>
-                <input
-                  type="color"
-                  value={colorScheme.tertiary}
-                  onChange={(e) => updateColor("tertiary", e.target.value)}
-                  disabled={isSaving}
-                />
-              </label>
-              <label className="form__field form__field--color">
                 <span>Background</span>
                 <input
                   type="color"
@@ -213,18 +203,20 @@ export default function EventCreateModal({
                   disabled={isSaving}
                 />
               </label>
-            </div>
-
-            <div className="form__row">
               <label className="form__field form__field--color">
-                <span>Alt background</span>
+                <span>Alt background (optional)</span>
                 <input
                   type="color"
-                  value={colorScheme.alt_background}
-                  onChange={(e) => updateColor("alt_background", e.target.value)}
+                  value={colorScheme.alt_background || "#e2e8f0"}
+                  onChange={(e) =>
+                    updateColor("alt_background", e.target.value)
+                  }
                   disabled={isSaving}
                 />
               </label>
+            </div>
+
+            <div className="form__row">
               <label className="form__field form__field--color">
                 <span>Text</span>
                 <input
@@ -234,17 +226,16 @@ export default function EventCreateModal({
                   disabled={isSaving}
                 />
               </label>
+              <label className="form__field form__field--color">
+                <span>Heading</span>
+                <input
+                  type="color"
+                  value={colorScheme.heading}
+                  onChange={(e) => updateColor("heading", e.target.value)}
+                  disabled={isSaving}
+                />
+              </label>
             </div>
-
-            <label className="form__field form__field--color">
-              <span>Title text</span>
-              <input
-                type="color"
-                value={colorScheme.title_text}
-                onChange={(e) => updateColor("title_text", e.target.value)}
-                disabled={isSaving}
-              />
-            </label>
 
             <div className="admin__card">
               <p className="admin__eyebrow">Event Items JSON Upload</p>

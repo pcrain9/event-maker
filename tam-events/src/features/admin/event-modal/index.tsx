@@ -1,7 +1,13 @@
 import { useEffect, useState } from "react";
 import { updateEvent } from "../../../api";
 import { useToast } from "../../../components/toast";
-import type { AdminEvent, EventResponse, FooterLink } from "../../../types";
+import type {
+  AdminEvent,
+  EventResponse,
+  EventUpdate,
+  FooterLink,
+  ThemeColors,
+} from "../../../types";
 
 type EventModalProps = {
   isOpen: boolean;
@@ -23,6 +29,7 @@ export default function EventModal({
 }: EventModalProps) {
   const toast = useToast();
   const [footerLinks, setFooterLinks] = useState<FooterLink[]>([]);
+  const [colorScheme, setColorScheme] = useState<ThemeColors | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -32,6 +39,7 @@ export default function EventModal({
     }
 
     setFooterLinks(selectedEvent?.footer_links ?? []);
+    setColorScheme(selectedEvent?.color_scheme ?? null);
     setSubmitError(null);
   }, [isOpen, selectedEvent]);
 
@@ -69,6 +77,12 @@ export default function EventModal({
     setFooterLinks((current) => current.filter((_, i) => i !== index));
   };
 
+  const updateColor = (key: keyof ThemeColors, value: string) => {
+    setColorScheme((current) =>
+      current ? { ...current, [key]: value } : null,
+    );
+  };
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -92,17 +106,20 @@ export default function EventModal({
       setIsSaving(true);
       setSubmitError(null);
 
-      const updatedEvent = await updateEvent(selectedEvent.id, {
+      const updatePayload: EventUpdate = {
         footer_links: footerLinks,
-      });
+        ...(colorScheme ? { color_scheme: colorScheme } : {}),
+      };
 
-      toast.success("Footer links updated");
+      const updatedEvent = await updateEvent(selectedEvent.id, updatePayload);
+
+      toast.success("Event updated");
       onSave?.(updatedEvent);
       onClose();
     } catch (error) {
-      console.error("Failed to update event footer links", error);
-      setSubmitError("Failed to save footer links. Please try again.");
-      toast.error("Failed to update footer links");
+      console.error("Failed to update event", error);
+      setSubmitError("Failed to save event. Please try again.");
+      toast.error("Failed to update event");
     } finally {
       setIsSaving(false);
     }
@@ -115,7 +132,7 @@ export default function EventModal({
         <div className="modal__header">
           <div>
             <p className="admin__eyebrow">Admin</p>
-            <h3>Edit footer links</h3>
+            <h3>Edit event</h3>
           </div>
           <button
             className="admin__button admin__button--ghost"
@@ -127,16 +144,263 @@ export default function EventModal({
         </div>
 
         <div className="modal__body">
-          <form className="form" id="event-footer-links-form" onSubmit={handleSubmit}>
+          <form
+            className="form"
+            id="event-footer-links-form"
+            onSubmit={handleSubmit}
+          >
             {selectedEvent ? (
               <p className="admin__muted">{selectedEvent.title}</p>
             ) : null}
 
+            {colorScheme && (
+              <>
+                <p className="admin__eyebrow">Brand colors</p>
+                <div className="form__row">
+                  <label className="form__field form__field--color">
+                    <span>Primary</span>
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: "8px",
+                        alignItems: "center",
+                      }}
+                    >
+                      <input
+                        type="color"
+                        value={colorScheme.primary || "#000000"}
+                        onChange={(e) => updateColor("primary", e.target.value)}
+                        disabled={isSaving}
+                        style={{
+                          width: "50px",
+                          height: "40px",
+                          cursor: "pointer",
+                        }}
+                      />
+                      <input
+                        type="text"
+                        value={(colorScheme.primary || "#000000").toUpperCase()}
+                        onChange={(e) => updateColor("primary", e.target.value)}
+                        disabled={isSaving}
+                        style={{
+                          flex: 1,
+                          fontFamily: "monospace",
+                          fontSize: "12px",
+                        }}
+                        placeholder="#000000"
+                      />
+                    </div>
+                  </label>
+                  <label className="form__field form__field--color">
+                    <span>Secondary</span>
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: "8px",
+                        alignItems: "center",
+                      }}
+                    >
+                      <input
+                        type="color"
+                        value={colorScheme.secondary || "#000000"}
+                        onChange={(e) =>
+                          updateColor("secondary", e.target.value)
+                        }
+                        disabled={isSaving}
+                        style={{
+                          width: "50px",
+                          height: "40px",
+                          cursor: "pointer",
+                        }}
+                      />
+                      <input
+                        type="text"
+                        value={(
+                          colorScheme.secondary || "#000000"
+                        ).toUpperCase()}
+                        onChange={(e) =>
+                          updateColor("secondary", e.target.value)
+                        }
+                        disabled={isSaving}
+                        style={{
+                          flex: 1,
+                          fontFamily: "monospace",
+                          fontSize: "12px",
+                        }}
+                        placeholder="#000000"
+                      />
+                    </div>
+                  </label>
+                </div>
+
+                <div className="form__row">
+                  <label className="form__field form__field--color">
+                    <span>Background</span>
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: "8px",
+                        alignItems: "center",
+                      }}
+                    >
+                      <input
+                        type="color"
+                        value={colorScheme.background || "#ffffff"}
+                        onChange={(e) =>
+                          updateColor("background", e.target.value)
+                        }
+                        disabled={isSaving}
+                        style={{
+                          width: "50px",
+                          height: "40px",
+                          cursor: "pointer",
+                        }}
+                      />
+                      <input
+                        type="text"
+                        value={(
+                          colorScheme.background || "#ffffff"
+                        ).toUpperCase()}
+                        onChange={(e) =>
+                          updateColor("background", e.target.value)
+                        }
+                        disabled={isSaving}
+                        style={{
+                          flex: 1,
+                          fontFamily: "monospace",
+                          fontSize: "12px",
+                        }}
+                        placeholder="#ffffff"
+                      />
+                    </div>
+                  </label>
+                  <label className="form__field form__field--color">
+                    <span>Alt background</span>
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: "8px",
+                        alignItems: "center",
+                      }}
+                    >
+                      <input
+                        type="color"
+                        value={colorScheme.alt_background || "#e2e8f0"}
+                        onChange={(e) =>
+                          updateColor("alt_background", e.target.value)
+                        }
+                        disabled={isSaving}
+                        style={{
+                          width: "50px",
+                          height: "40px",
+                          cursor: "pointer",
+                        }}
+                      />
+                      <input
+                        type="text"
+                        value={(
+                          colorScheme.alt_background || "#e2e8f0"
+                        ).toUpperCase()}
+                        onChange={(e) =>
+                          updateColor("alt_background", e.target.value)
+                        }
+                        disabled={isSaving}
+                        style={{
+                          flex: 1,
+                          fontFamily: "monospace",
+                          fontSize: "12px",
+                        }}
+                        placeholder="#000000"
+                      />
+                    </div>
+                  </label>
+                </div>
+
+                <div className="form__row">
+                  <label className="form__field form__field--color">
+                    <span>Text</span>
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: "8px",
+                        alignItems: "center",
+                      }}
+                    >
+                      <input
+                        type="color"
+                        value={colorScheme.text || "#000000"}
+                        onChange={(e) => updateColor("text", e.target.value)}
+                        disabled={isSaving}
+                        style={{
+                          width: "50px",
+                          height: "40px",
+                          cursor: "pointer",
+                        }}
+                      />
+                      <input
+                        type="text"
+                        value={(colorScheme.text || "#000000").toUpperCase()}
+                        onChange={(e) => updateColor("text", e.target.value)}
+                        disabled={isSaving}
+                        style={{
+                          flex: 1,
+                          fontFamily: "monospace",
+                          fontSize: "12px",
+                        }}
+                        placeholder="#000000"
+                      />
+                    </div>
+                  </label>
+                  <label className="form__field form__field--color">
+                    <span>Heading</span>
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: "8px",
+                        alignItems: "center",
+                      }}
+                    >
+                      <input
+                        type="color"
+                        value={colorScheme.heading || "#000000"}
+                        onChange={(e) => updateColor("heading", e.target.value)}
+                        disabled={isSaving}
+                        style={{
+                          width: "50px",
+                          height: "40px",
+                          cursor: "pointer",
+                        }}
+                      />
+                      <input
+                        type="text"
+                        value={(colorScheme.heading || "#000000").toUpperCase()}
+                        onChange={(e) => updateColor("heading", e.target.value)}
+                        disabled={isSaving}
+                        style={{
+                          flex: 1,
+                          fontFamily: "monospace",
+                          fontSize: "12px",
+                        }}
+                        placeholder="#000000"
+                      />
+                    </div>
+                  </label>
+                </div>
+              </>
+            )}
+
+            <p className="admin__eyebrow">Footer links</p>
+
             {footerLinks.length === 0 ? (
-              <p className="admin__muted">No footer links yet. Add one below.</p>
+              <p className="admin__muted">
+                No footer links yet. Add one below.
+              </p>
             ) : (
               footerLinks.map((link, index) => (
-                <div className="form__row" key={`${selectedEvent?.id ?? "event"}-${index}`}>
+                <div
+                  className="form__row"
+                  key={`${selectedEvent?.id ?? "event"}-${index}`}
+                >
                   <label className="form__field">
                     <span>Link title</span>
                     <input
@@ -154,7 +418,9 @@ export default function EventModal({
                     <input
                       type="url"
                       value={link.href}
-                      onChange={(e) => handleUpdateLink(index, "href", e.target.value)}
+                      onChange={(e) =>
+                        handleUpdateLink(index, "href", e.target.value)
+                      }
                       placeholder="https://example.com"
                       disabled={isSaving}
                     />

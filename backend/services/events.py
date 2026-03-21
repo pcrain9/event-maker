@@ -165,6 +165,13 @@ async def update_event(
     for field, value in update_data.items():
         setattr(event, field, value)
 
+    # Explicitly flag JSON columns as modified so SQLAlchemy always writes them
+    from sqlalchemy.orm.attributes import flag_modified
+    if "color_scheme" in update_data:
+        flag_modified(event, "color_scheme")
+    if "footer_links" in update_data:
+        flag_modified(event, "footer_links")
+
     try:
         await db.commit()
         await db.refresh(event)

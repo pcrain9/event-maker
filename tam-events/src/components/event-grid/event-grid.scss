@@ -29,13 +29,13 @@
     align-items: center;
     justify-content: center;
     min-height: 300px;
-    background: #f9f9f9;
+    background: var(--bg-glow-1);
   }
 }
 
 .event-grid__empty-state {
   text-align: center;
-  color: #666;
+  color: var(--muted);
   font-size: 16px;
   font-weight: 500;
 }
