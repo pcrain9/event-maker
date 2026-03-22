@@ -1,13 +1,14 @@
 .admin-layout {
   min-height: 100vh;
   display: flex;
+  background: #fff;
 }
 
 .admin-sidebar {
   width: 240px;
   flex-shrink: 0;
   border-right: 1px solid var(--line);
-  background: var(--bg-alt);
+  background: #fff;
 }
 
 .admin-tabs-vertical {
@@ -39,13 +40,14 @@
 .admin-tab--active,
 .admin-tab--active:hover {
   color: #fff;
-  background: var(--accent);
+  background: var(--tam-primary);
   border-color: transparent;
 }
 
 .admin-content {
   flex: 1;
   position: relative;
+  background: #fff;
 }
 
 .admin-content__inner {
@@ -53,7 +55,7 @@
 }
 
 .admin-tab-content {
-  background: var(--card);
+  background: #fff;
   border-radius: 1.5rem;
   padding: clamp(1.5rem, 4vw, 2.5rem);
   border: 1px solid var(--line);
@@ -127,10 +129,10 @@
 }
 
 .admin__button--primary {
-  background: var(--accent);
+  background: var(--tam-primary);
   color: #fff;
   border-color: transparent;
-  box-shadow: 0 12px 25px rgb(var(--accent-rgb) / 0.25);
+  box-shadow: 0 12px 25px rgb(var(--tam-primary-rgb) / 0.25);
 }
 
 .admin__button--ghost {
@@ -156,14 +158,14 @@
   padding: 1.5rem;
   border-radius: 1.2rem;
   border: 1px solid var(--line);
-  background: var(--glass-strong);
+  background: #fff;
   box-shadow: var(--shadow);
   display: grid;
   gap: 0.75rem;
 }
 
 .admin__card--accent {
-  background: var(--card-accent);
+  background: #fff;
 }
 
 .admin__card h3 {

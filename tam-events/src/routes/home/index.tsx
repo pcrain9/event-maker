@@ -254,7 +254,9 @@ const applyColorScheme = (scheme: ThemeColors) => {
   // Core color tokens
   root.style.setProperty("--bg", scheme.background);
   root.style.setProperty("--ink", scheme.text);
+  root.style.setProperty("--ink-rgb", hexToRgbTriplet(scheme.text));
   root.style.setProperty("--accent", scheme.primary);
+  root.style.setProperty("--accent-rgb", hexToRgbTriplet(scheme.primary));
   root.style.setProperty("--muted", scheme.secondary);
   root.style.setProperty("--accent-soft", scheme.secondary);
 
@@ -294,6 +296,23 @@ const dimColor = (hex: string, factor: number): string => {
   return "#" + [r, g, b].map((x) => x.toString(16).padStart(2, "0")).join("");
 };
 
+const hexToRgbTriplet = (hex: string): string => {
+  const normalized = hex.replace("#", "");
+  const expanded =
+    normalized.length === 3
+      ? normalized
+          .split("")
+          .map((ch) => ch + ch)
+          .join("")
+      : normalized;
+
+  const value = parseInt(expanded, 16);
+  const r = (value >> 16) & 255;
+  const g = (value >> 8) & 255;
+  const b = value & 255;
+  return `${r} ${g} ${b}`;
+};
+
 // Helper: derive a subtle alt background from base background
 const deriveAltBackground = (bgColor: string): string => {
   const num = parseInt(bgColor.replace("#", ""), 16);
@@ -301,6 +320,31 @@ const deriveAltBackground = (bgColor: string): string => {
   const g = Math.min(255, Math.floor(((num >> 8) & 255) * 0.95));
   const b = Math.min(255, Math.floor((num & 255) * 0.95));
   return "#" + [r, g, b].map((x) => x.toString(16).padStart(2, "0")).join("");
+};
+
+const EVENT_COLOR_OVERRIDE_KEYS = [
+  "--bg",
+  "--ink",
+  "--ink-rgb",
+  "--accent",
+  "--accent-rgb",
+  "--muted",
+  "--accent-soft",
+  "--accent-deep",
+  "--bg-alt",
+  "--card",
+  "--line",
+  "--bg-glow-1",
+  "--bg-glow-2",
+  "--card-accent",
+  "--preview-card",
+] as const;
+
+const clearEventColorOverrides = () => {
+  const root = document.documentElement;
+  EVENT_COLOR_OVERRIDE_KEYS.forEach((key) => {
+    root.style.removeProperty(key);
+  });
 };
 
 export default function HomeRoute() {
@@ -365,11 +409,14 @@ export default function HomeRoute() {
     let isMounted = true;
     const fetchEvent = async () => {
       if (!slug) {
+        clearEventColorOverrides();
         setLoadError("No event slug provided");
         setIsLoading(false);
         return;
       }
       try {
+        // Ensure stale inline vars from prior event don't persist during slug transitions.
+        clearEventColorOverrides();
         setIsLoading(true);
         const data = await getEventBySlug(slug);
         if (!isMounted) return;
@@ -400,6 +447,7 @@ export default function HomeRoute() {
     fetchEvent();
     return () => {
       isMounted = false;
+      clearEventColorOverrides();
     };
   }, [slug]);
 
@@ -424,7 +472,7 @@ export default function HomeRoute() {
       heroAction={
         <button
           onClick={() => navigate(isAuthenticated ? "/admin" : "/login")}
-          className="admin__button admin__button--primary"
+          className="layout__hero-admin-cta"
         >
           {isAuthenticated ? "Go to Admin" : "Admin Login"}
         </button>
@@ -440,9 +488,11 @@ export default function HomeRoute() {
                 sessions.
               </p>
               {isLoading ? (
-                <p className="admin__muted">Loading schedule...</p>
+                <p className="schedule__muted">Loading schedule...</p>
               ) : null}
-              {loadError ? <p className="admin__muted">{loadError}</p> : null}
+              {loadError ? (
+                <p className="schedule__muted">{loadError}</p>
+              ) : null}
             </div>
           </div>
 
