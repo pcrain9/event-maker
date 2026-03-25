@@ -1,0 +1,35 @@
+{
+  "name": "tam-events-full-stack",
+  "version": "1.0.0",
+  "description": "TAM Events - Full-stack monorepo with FastAPI backend and React frontend",
+  "private": true,
+  "scripts": {
+    "backend:up": "docker-compose up -d",
+    "backend:down": "docker-compose down",
+    "backend:logs": "docker-compose logs -f backend",
+    "backend:db:logs": "docker-compose logs -f db",
+    "backend:migrate": "docker-compose exec backend alembic upgrade head",
+    "backend:seed": "docker-compose exec backend python -m backend.scripts.seed",
+    "backend:test": "docker-compose exec backend pytest",
+    "frontend:dev": "cd tam-events && npm run dev",
+    "frontend:build": "cd tam-events && npm run build",
+    "frontend:lint": "cd tam-events && npm run lint",
+    "frontend:preview": "cd tam-events && npm run preview",
+    "dev": "npm run backend:up && npm run frontend:dev",
+    "build": "npm run backend:migrate && npm run backend:seed && npm run frontend:build",
+    "lint": "npm run frontend:lint && npm run backend:test",
+    "stop": "docker-compose down",
+    "logs": "docker-compose logs -f",
+    "setup": "cd tam-events && npm install && npm run backend:up",
+    "reset": "docker-compose down -v"
+  },
+  "keywords": [
+    "fastapi",
+    "react",
+    "vite",
+    "postgresql",
+    "docker"
+  ],
+  "author": "Perry Crain, co-pilot chat",
+  "license": "ISC"
+}

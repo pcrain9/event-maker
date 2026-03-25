@@ -4,14 +4,18 @@
  */
 
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useToast } from "../../components/toast";
 import HeroLanding from "../../components/hero-landing";
 import EventGrid from "../../components/event-grid";
 import { getEvents } from "../../api";
+import { useAuthStore } from "../../auth/store/authStore";
 import type { EventIdsResponse } from "../../types";
 import "./landing.scss";
 
 const LandingRoute = () => {
+  const navigate = useNavigate();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const [events, setEvents] = useState<EventIdsResponse["events"]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
@@ -38,7 +42,17 @@ const LandingRoute = () => {
 
   return (
     <div className="landing-page">
-      <HeroLanding />
+      <HeroLanding
+        cornerAction={
+          <button
+            type="button"
+            className="hero-landing__admin-cta"
+            onClick={() => navigate(isAuthenticated ? "/admin" : "/login")}
+          >
+            {isAuthenticated ? "Go to Admin" : "Admin Login"}
+          </button>
+        }
+      />
 
       {hasError ? (
         <section className="landing-page__error">
