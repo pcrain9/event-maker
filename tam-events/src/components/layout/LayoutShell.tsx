@@ -10,6 +10,7 @@ import {
 export default function LayoutShell({
   title,
   subtitle,
+  variant = "default",
   navItems = [],
   notices = [],
   footerLinks = null,
@@ -53,7 +54,7 @@ export default function LayoutShell({
   );
 
   return (
-    <div className="layout">
+    <div className="layout" data-variant={variant}>
       {visibleNotices.length > 0 && (
         <section className="layout__notices" aria-live="polite">
           {visibleNotices.map((notice) => {
