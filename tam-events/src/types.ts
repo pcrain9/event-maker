@@ -25,6 +25,7 @@ export type LayoutNotice = {
 export type LayoutShellProps = {
   title: string;
   subtitle: string;
+  variant?: "default" | "clean";
   navItems?: LayoutNavItem[];
   notices?: LayoutNotice[];
   footerLinks?: FooterLink[] | null;

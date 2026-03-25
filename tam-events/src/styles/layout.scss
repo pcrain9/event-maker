@@ -357,3 +357,9 @@
     gap: 0.75rem 1.25rem;
   }
 }
+
+/* ── Clean variant: used on login and other non-event routes ── */
+.layout[data-variant="clean"],
+.layout[data-variant="clean"] .layout__hero {
+  background: #fff;
+}
