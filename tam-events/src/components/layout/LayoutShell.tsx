@@ -17,6 +17,7 @@ export default function LayoutShell({
   announcementStorageScope = "guest",
   heroImageUrl: _heroImageUrl, // Accept but not used yet
   heroAction,
+  isLoading = false,
   children,
 }: LayoutShellProps) {
   const [dismissedNoticeKeys, setDismissedNoticeKeys] = useState<string[]>([]);
@@ -111,6 +112,7 @@ export default function LayoutShell({
         subtitle={subtitle}
         navItems={navItems}
         heroAction={heroAction}
+        isLoading={isLoading}
       />
 
       <main className="layout__content">{children}</main>
