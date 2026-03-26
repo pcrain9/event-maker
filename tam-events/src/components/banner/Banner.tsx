@@ -7,6 +7,7 @@ export default function Banner({
   navItems = [],
   heroImageUrl,
   heroAction,
+  isLoading = false,
 }: BannerProps) {
   return (
     <header className="layout__hero">
@@ -24,8 +25,17 @@ export default function Banner({
         <div className="layout__hero-top">
           <p className="layout__kicker">TAM Events</p>
         </div>
-        <h1 className="layout__title">{title}</h1>
-        <p className="layout__subtitle">{subtitle}</p>
+        {isLoading ? (
+          <>
+            <div className="layout__title-skeleton" aria-hidden="true" />
+            <div className="layout__subtitle-skeleton" aria-hidden="true" />
+          </>
+        ) : (
+          <>
+            <h1 className="layout__title">{title}</h1>
+            <p className="layout__subtitle">{subtitle}</p>
+          </>
+        )}
         {navItems.length > 0 && (
           <nav className="layout__nav" aria-label="Primary">
             {navItems.map((item) => (

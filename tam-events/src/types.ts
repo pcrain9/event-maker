@@ -12,6 +12,7 @@ export type BannerProps = {
   navItems?: LayoutNavItem[];
   heroImageUrl?: string | null;
   heroAction?: ReactNode;
+  isLoading?: boolean;
 };
 
 export type LayoutNotice = {
@@ -32,6 +33,7 @@ export type LayoutShellProps = {
   announcementStorageScope?: string;
   heroImageUrl?: string | null;
   heroAction?: ReactNode;
+  isLoading?: boolean;
   children: ReactNode;
 };
 
