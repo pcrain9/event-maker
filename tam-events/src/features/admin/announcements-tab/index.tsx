@@ -92,7 +92,7 @@ export default function AnnouncementsTab({
         </div>
         <div className="admin__actions">
           <label className="form__field" style={{ marginRight: "1rem" }}>
-            <span>Select event</span>
+            <span>Select event to view announcements</span>
             <select
               value={selectedEventSlug ?? ""}
               onChange={(e) => setSelectedEventSlug(e.target.value || null)}

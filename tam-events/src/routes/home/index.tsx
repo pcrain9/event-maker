@@ -469,6 +469,7 @@ export default function HomeRoute() {
       footerLinks={eventData?.footer_links ?? null}
       announcementStorageScope={announcementStorageScope}
       heroImageUrl={heroImageUrl}
+      isLoading={isLoading}
       heroAction={
         <button
           onClick={() => navigate(isAuthenticated ? "/admin" : "/login")}

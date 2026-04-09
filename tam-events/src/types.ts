@@ -12,6 +12,7 @@ export type BannerProps = {
   navItems?: LayoutNavItem[];
   heroImageUrl?: string | null;
   heroAction?: ReactNode;
+  isLoading?: boolean;
 };
 
 export type LayoutNotice = {
@@ -25,12 +26,14 @@ export type LayoutNotice = {
 export type LayoutShellProps = {
   title: string;
   subtitle: string;
+  variant?: "default" | "clean";
   navItems?: LayoutNavItem[];
   notices?: LayoutNotice[];
   footerLinks?: FooterLink[] | null;
   announcementStorageScope?: string;
   heroImageUrl?: string | null;
   heroAction?: ReactNode;
+  isLoading?: boolean;
   children: ReactNode;
 };
 

@@ -110,6 +110,36 @@
   font-size: 1.1rem;
 }
 
+@keyframes hero-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.layout__title-skeleton,
+.layout__subtitle-skeleton {
+  border-radius: 6px;
+  background: linear-gradient(
+    90deg,
+    var(--bg-glow-1, #efefef) 0%,
+    var(--bg-glow-2, #e0e0e0) 50%,
+    var(--bg-glow-1, #efefef) 100%
+  );
+  background-size: 200% 100%;
+  animation: hero-shimmer 1.5s infinite;
+}
+
+.layout__title-skeleton {
+  height: clamp(2.6rem, 6vw, 4.6rem);
+  width: min(420px, 70%);
+  margin: 0 0 0.75rem;
+}
+
+.layout__subtitle-skeleton {
+  height: 1.1rem;
+  width: min(480px, 90%);
+  margin: 0 0 1.75rem;
+}
+
 .layout__hero-admin-cta {
   border: none;
   background: var(--tam-primary);
@@ -356,4 +386,10 @@
   .layout__footer-links {
     gap: 0.75rem 1.25rem;
   }
+}
+
+/* ── Clean variant: used on login and other non-event routes ── */
+.layout[data-variant="clean"],
+.layout[data-variant="clean"] .layout__hero {
+  background: #fff;
 }

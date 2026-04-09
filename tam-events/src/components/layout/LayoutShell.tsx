@@ -10,12 +10,14 @@ import {
 export default function LayoutShell({
   title,
   subtitle,
+  variant = "default",
   navItems = [],
   notices = [],
   footerLinks = null,
   announcementStorageScope = "guest",
   heroImageUrl: _heroImageUrl, // Accept but not used yet
   heroAction,
+  isLoading = false,
   children,
 }: LayoutShellProps) {
   const [dismissedNoticeKeys, setDismissedNoticeKeys] = useState<string[]>([]);
@@ -53,7 +55,7 @@ export default function LayoutShell({
   );
 
   return (
-    <div className="layout">
+    <div className="layout" data-variant={variant}>
       {visibleNotices.length > 0 && (
         <section className="layout__notices" aria-live="polite">
           {visibleNotices.map((notice) => {
@@ -110,6 +112,7 @@ export default function LayoutShell({
         subtitle={subtitle}
         navItems={navItems}
         heroAction={heroAction}
+        isLoading={isLoading}
       />
 
       <main className="layout__content">{children}</main>
