@@ -42,10 +42,6 @@ const LandingRoute = () => {
 
   return (
     <div className="landing-page">
-      <img
-        src="https://pub-a30bf2e7fe38458c82991708c6f5a6e3.r2.dev/headshots/Adrian%20Cardwell.jpg"
-        alt="Adrian Cardwell"
-      />
       <HeroLanding
         cornerAction={
           <button
