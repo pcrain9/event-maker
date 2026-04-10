@@ -3,7 +3,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from backend.models.event import Event
 from backend.models.event_item import Event_Item
-from backend.schema.event_item import EventItemDetail, EventItemUpdate
+from backend.schema.event_item import EventItemCreate, EventItemDetail, EventItemUpdate
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -59,6 +59,30 @@ async def update_event_item(
         await db.commit()
         await db.refresh(fetched_event_item)
         return fetched_event_item
+    except SQLAlchemyError:
+        await db.rollback()
+        raise
+
+
+async def create_event_item(
+    db: AsyncSession,
+    event_id: int,
+    event_item_data: EventItemCreate,
+) -> Event_Item | None:
+    """Create a new event item for an existing event."""
+    event_query = select(Event).where(Event.id == event_id)
+    event_result = await db.execute(event_query)
+    event = event_result.scalar_one_or_none()
+    if not event:
+        return None
+
+    item = Event_Item(event_id=event_id, **event_item_data.model_dump())
+    db.add(item)
+
+    try:
+        await db.commit()
+        await db.refresh(item)
+        return item
     except SQLAlchemyError:
         await db.rollback()
         raise

@@ -10,7 +10,7 @@ export type EventItemsTabRef = {
 type EventItemsTabProps = {
   events: Array<{ id: number; slug: string; title: string }>;
   onEditItem: (item: AdminEventItem) => void;
-  onNewItem: () => void;
+  onNewItem: (eventId: number) => void;
   refreshRef?: (ref: EventItemsTabRef) => void;
 };
 
@@ -64,6 +64,9 @@ export default function EventItemsTab({
   }, [selectedEventSlug, fetchEventItems]);
 
   const filteredItems = eventItems;
+  const selectedEvent = events.find(
+    (event) => event.slug === selectedEventSlug,
+  );
 
   return (
     <section className="admin-tab-content">
@@ -127,7 +130,8 @@ export default function EventItemsTab({
               </div>
               <button
                 className="admin__button admin__button--ghost"
-                onClick={onNewItem}
+                onClick={() => selectedEvent && onNewItem(selectedEvent.id)}
+                disabled={!selectedEvent}
               >
                 Add item
               </button>

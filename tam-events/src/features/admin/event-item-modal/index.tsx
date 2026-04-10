@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
-import { updateEventItem } from "../../../api";
+import { createEventItem, updateEventItem } from "../../../api";
 import { useToastStore } from "../../../components/toast/store/toastStore";
 import type { AdminEvent, AdminEventItem, Speaker } from "../../../types";
-import type { EventItemUpdate } from "../../../types";
+import type { EventItemCreate, EventItemUpdate } from "../../../types";
 
 type EventItemModalProps = {
   isOpen: boolean;
   onClose: () => void;
   selectedItem: AdminEventItem | null;
+  initialEventId?: number | null;
   events: AdminEvent[];
   onSave?: (item: AdminEventItem) => void;
 };
@@ -16,6 +17,7 @@ export default function EventItemModal({
   isOpen,
   onClose,
   selectedItem,
+  initialEventId,
   events,
   onSave,
 }: EventItemModalProps) {
@@ -24,6 +26,7 @@ export default function EventItemModal({
 
   // Form state
   const [formData, setFormData] = useState<EventItemUpdate>({});
+  const [selectedEventId, setSelectedEventId] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -41,17 +44,21 @@ export default function EventItemModal({
         cancelled: selectedItem.cancelled,
         slides: selectedItem.slides,
       });
+      setSelectedEventId(selectedItem.event_id);
     } else {
       setFormData({
         title: "",
         sponsor: "",
+        time: "",
         location: "",
         speakers: [],
         cancelled: false,
+        slides: [],
       });
+      setSelectedEventId(initialEventId ?? events[0]?.id ?? null);
     }
     setError(null);
-  }, [selectedItem, isOpen]);
+  }, [selectedItem, isOpen, initialEventId, events]);
 
   // Lock body scroll when modal is open
   useEffect(() => {
@@ -112,15 +119,22 @@ export default function EventItemModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!selectedItem) {
-      const errorMsg = "No event item selected";
+    if (!formData.title?.trim()) {
+      const errorMsg = "Title is required";
       setError(errorMsg);
       addToast({ type: "error", message: errorMsg });
       return;
     }
 
-    if (!formData.title?.trim()) {
-      const errorMsg = "Title is required";
+    if (!selectedItem && !selectedEventId) {
+      const errorMsg = "An event is required";
+      setError(errorMsg);
+      addToast({ type: "error", message: errorMsg });
+      return;
+    }
+
+    if (!formData.time) {
+      const errorMsg = "Session time is required";
       setError(errorMsg);
       addToast({ type: "error", message: errorMsg });
       return;
@@ -130,24 +144,41 @@ export default function EventItemModal({
       setLoading(true);
       setError(null);
 
-      const eventId = selectedItem.event_id;
-      const itemId = selectedItem.id;
+      let savedItem: AdminEventItem;
 
-      // Call the API to update the item
-      await updateEventItem(eventId, itemId, formData);
+      if (selectedItem) {
+        const eventId = selectedItem.event_id;
+        const itemId = selectedItem.id;
+
+        await updateEventItem(eventId, itemId, formData);
+        savedItem = {
+          ...selectedItem,
+          ...formData,
+        };
+      } else {
+        const created = await createEventItem(selectedEventId as number, {
+          title: formData.title.trim(),
+          time: formData.time,
+          sponsor: formData.sponsor ?? null,
+          speakers: formData.speakers ?? null,
+          link: formData.link ?? null,
+          description: formData.description ?? null,
+          location: formData.location ?? null,
+          cancelled: formData.cancelled ?? false,
+          slides: formData.slides ?? null,
+        } satisfies EventItemCreate);
+        savedItem = created;
+      }
 
       // Show success toast
       addToast({
         type: "success",
-        message: `"${formData.title}" updated successfully`,
+        message: `"${formData.title}" ${selectedItem ? "updated" : "created"} successfully`,
       });
 
       // Notify parent component of successful save
       if (onSave) {
-        onSave({
-          ...selectedItem,
-          ...formData,
-        });
+        onSave(savedItem);
       }
 
       onClose();
@@ -205,9 +236,13 @@ export default function EventItemModal({
               <label className="form__field">
                 <span>Event</span>
                 <select
-                  defaultValue={selectedItem?.event_id ?? 1}
-                  disabled={!selectedItem || loading}
+                  value={selectedEventId ?? ""}
+                  onChange={(e) =>
+                    setSelectedEventId(Number(e.target.value) || null)
+                  }
+                  disabled={loading}
                 >
+                  <option value="">Select event</option>
                   {events.map((event) => (
                     <option key={event.id} value={event.id}>
                       {event.title}
@@ -465,7 +500,11 @@ export default function EventItemModal({
             onClick={handleSubmit}
             disabled={loading}
           >
-            {loading ? "Saving..." : "Save changes"}
+            {loading
+              ? "Saving..."
+              : selectedItem
+                ? "Save changes"
+                : "Create session"}
           </button>
         </div>
       </div>

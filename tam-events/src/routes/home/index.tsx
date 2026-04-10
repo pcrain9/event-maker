@@ -463,7 +463,7 @@ export default function HomeRoute() {
   return (
     <LayoutShell
       title={title}
-      subtitle="Browse the program, jump into highlighted sessions, and keep an eye on room shifts as they roll in."
+      subtitle=""
       navItems={navItems}
       notices={notices}
       footerLinks={eventData?.footer_links ?? null}

@@ -9,6 +9,7 @@ import type {
   EventResponse,
   LoginResponse,
   EventItem,
+  EventItemCreate,
   EventItemUpdate,
   EventUpdate,
   AdminAnnouncement,
@@ -165,6 +166,20 @@ export const updateEventItem = async (
 ): Promise<EventItem> => {
   const response = await authenticatedClient.put<EventItem>(
     `/events/${eventId}/items/${itemId}`,
+    data,
+  );
+  return response.data;
+};
+
+/**
+ * Create an event item - ADMIN ONLY
+ */
+export const createEventItem = async (
+  eventId: number,
+  data: EventItemCreate,
+): Promise<EventItem> => {
+  const response = await authenticatedClient.post<EventItem>(
+    `/events/${eventId}/items`,
     data,
   );
   return response.data;
