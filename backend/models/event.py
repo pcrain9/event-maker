@@ -14,17 +14,18 @@ class Event(Base):
     id: Mapped[int] = mapped_column(Integer, Identity(), primary_key=True, index=True)
     slug: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
     title: Mapped[str] = mapped_column(String(255), nullable=False)
-    hero_image_url: Mapped[str] = mapped_column(String(255), nullable=True) 
-    color_scheme: Mapped[dict] = mapped_column(JSON, nullable=False) 
+    hero_image_url: Mapped[str] = mapped_column(String(255), nullable=True)
+    color_scheme: Mapped[dict] = mapped_column(JSON, nullable=False)
+    sponsors: Mapped[Optional[list[str]]] = mapped_column(JSON, nullable=True)
     footer_links: Mapped[Optional[list[dict]]] = mapped_column(JSON, nullable=True)
-    
+
     # Relationship to Event_Item
     items: Mapped[list["Event_Item"]] = relationship(
         "Event_Item",
         back_populates="event",
         cascade="all, delete-orphan",
     )
-    
+
     # Relationship to Announcement
     announcements: Mapped[list["Announcement"]] = relationship(
         "Announcement",

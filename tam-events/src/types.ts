@@ -109,6 +109,7 @@ export type FooterLink = {
 export type EventUpdate = {
   footer_links?: FooterLink[] | null;
   color_scheme?: ThemeColors;
+  sponsors?: string[] | null;
 };
 
 export type EventCreate = {
@@ -116,6 +117,7 @@ export type EventCreate = {
   title: string;
   hero_image_url?: string | null;
   color_scheme: ThemeColors;
+  sponsors?: string[] | null;
   event_items?: EventItemCreate[];
 };
 
@@ -125,6 +127,7 @@ export type EventAdminResponse = {
   title: string;
   hero_image_url?: string | null;
   color_scheme: ThemeColors;
+  sponsors?: string[] | null;
   footer_links?: FooterLink[] | null;
 };
 
@@ -136,6 +139,7 @@ export type AdminEvent = {
   title: string;
   status: "live" | "draft" | "archived";
   itemsCount: number;
+  sponsors?: string[] | null;
   footer_links?: FooterLink[] | null;
   color_scheme?: ThemeColors;
 };
@@ -197,6 +201,7 @@ export type EventResponse = {
   title: string;
   hero_image_url?: string | null;
   color_scheme: ThemeColors;
+  sponsors?: string[] | null;
   event_items: EventItem[];
   footer_links?: FooterLink[] | null;
 };

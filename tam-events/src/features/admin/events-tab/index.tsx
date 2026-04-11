@@ -32,7 +32,10 @@ export default function EventsTab({
           </p>
         </div>
         <div className="admin__actions">
-          <button className="admin__button admin__button--primary" onClick={onNewEvent}>
+          <button
+            className="admin__button admin__button--primary"
+            onClick={onNewEvent}
+          >
             New event
           </button>
         </div>
@@ -74,6 +77,7 @@ export default function EventsTab({
                 <div>
                   <p className="admin__list-title">{event.title}</p>
                   <p className="admin__muted">
+                    {event.sponsors?.length ?? 0} sponsor logos,{" "}
                     {event.footer_links?.length ?? 0} footer links
                   </p>
                 </div>

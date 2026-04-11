@@ -28,6 +28,7 @@ export default function EventModal({
   onSave,
 }: EventModalProps) {
   const toast = useToast();
+  const [sponsors, setSponsors] = useState<string[]>([]);
   const [footerLinks, setFooterLinks] = useState<FooterLink[]>([]);
   const [colorScheme, setColorScheme] = useState<ThemeColors | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -38,6 +39,9 @@ export default function EventModal({
       return;
     }
 
+    setSponsors(
+      selectedEvent?.sponsors?.length ? selectedEvent.sponsors : [""],
+    );
     setFooterLinks(selectedEvent?.footer_links ?? []);
     setColorScheme(selectedEvent?.color_scheme ?? null);
     setSubmitError(null);
@@ -77,6 +81,24 @@ export default function EventModal({
     setFooterLinks((current) => current.filter((_, i) => i !== index));
   };
 
+  const handleAddSponsor = () => {
+    setSponsors((current) => [...current, ""]);
+  };
+
+  const handleUpdateSponsor = (index: number, value: string) => {
+    setSponsors((current) =>
+      current.map((sponsor, currentIndex) =>
+        currentIndex === index ? value : sponsor,
+      ),
+    );
+  };
+
+  const handleRemoveSponsor = (index: number) => {
+    setSponsors((current) =>
+      current.filter((_, currentIndex) => currentIndex !== index),
+    );
+  };
+
   const updateColor = (key: keyof ThemeColors, value: string) => {
     setColorScheme((current) =>
       current ? { ...current, [key]: value } : null,
@@ -102,11 +124,16 @@ export default function EventModal({
       return;
     }
 
+    const normalizedSponsors = sponsors
+      .map((sponsor) => sponsor.trim())
+      .filter(Boolean);
+
     try {
       setIsSaving(true);
       setSubmitError(null);
 
       const updatePayload: EventUpdate = {
+        sponsors: normalizedSponsors,
         footer_links: footerLinks,
         ...(colorScheme ? { color_scheme: colorScheme } : {}),
       };
@@ -388,6 +415,54 @@ export default function EventModal({
                 </div>
               </>
             )}
+
+            <p className="admin__eyebrow">Sponsors</p>
+            <p className="admin__muted">
+              Use direct image URLs, the same way you would for the hero image.
+            </p>
+
+            {sponsors.map((sponsor, index) => (
+              <div
+                className="form__row"
+                key={`${selectedEvent?.id ?? "event"}-sponsor-${index}`}
+              >
+                <label className="form__field">
+                  <span>
+                    {index === 0
+                      ? "Sponsor image URL (optional)"
+                      : `Sponsor image URL ${index + 1} (optional)`}
+                  </span>
+                  <input
+                    type="url"
+                    value={sponsor}
+                    onChange={(e) => handleUpdateSponsor(index, e.target.value)}
+                    placeholder="https://tam-assets.s3.amazonaws.com/sponsors/logo.png"
+                    disabled={isSaving}
+                  />
+                </label>
+                {sponsors.length > 1 ? (
+                  <div className="form__field" style={{ alignSelf: "end" }}>
+                    <button
+                      type="button"
+                      className="admin__button admin__button--ghost"
+                      onClick={() => handleRemoveSponsor(index)}
+                      disabled={isSaving}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ) : null}
+              </div>
+            ))}
+
+            <button
+              type="button"
+              className="admin__button admin__button--ghost"
+              onClick={handleAddSponsor}
+              disabled={isSaving}
+            >
+              Add another sponsor image URL
+            </button>
 
             <p className="admin__eyebrow">Footer links</p>
 

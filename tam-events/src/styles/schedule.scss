@@ -28,6 +28,34 @@
   gap: 2rem;
 }
 
+.schedule__sponsors-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  gap: 1.5rem;
+}
+
+.schedule__sponsor-card,
+.schedule__sponsors-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 16rem;
+  padding: 2rem;
+  border-radius: 1.25rem;
+  background: var(--glass-soft);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+
+.schedule__sponsors-empty {
+  justify-content: flex-start;
+}
+
+.schedule__sponsor-image {
+  display: block;
+  max-width: min(100%, 20rem);
+}
+
 .schedule__day {
   display: grid;
   gap: 1.25rem;
@@ -369,6 +397,18 @@
     justify-content: space-between;
     align-items: flex-end;
   }
+
+@media (max-width: 640px) {
+  .schedule__sponsor-card,
+  .schedule__sponsors-empty {
+    min-height: 12rem;
+    padding: 1.5rem;
+  }
+
+  .schedule__sponsor-image {
+    max-height: 7rem;
+  }
+}
 
   .schedule__day-header {
     flex-direction: row;

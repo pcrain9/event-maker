@@ -119,6 +119,7 @@ async def get_event_with_items(slug: str, db: AsyncSession) -> EventItemResponse
     event_slug = event.slug
     event_title = event.title
     hero_image_url = event.hero_image_url
+    sponsors = list(event.sponsors) if event.sponsors is not None else None
     footer_links = (
         [
             link if isinstance(link, FooterLink) else FooterLink(**link)
@@ -160,6 +161,7 @@ async def get_event_with_items(slug: str, db: AsyncSession) -> EventItemResponse
         title=event_title,
         hero_image_url=hero_image_url,
         color_scheme=color_scheme,
+        sponsors=sponsors,
         footer_links=footer_links,
         event_items=items_list
     )
@@ -200,6 +202,8 @@ async def update_event(
     from sqlalchemy.orm.attributes import flag_modified
     if "color_scheme" in update_data:
         flag_modified(event, "color_scheme")
+    if "sponsors" in update_data:
+        flag_modified(event, "sponsors")
     if "footer_links" in update_data:
         flag_modified(event, "footer_links")
 
@@ -231,6 +235,7 @@ async def create_event(db: AsyncSession, event_data: EventCreate) -> Event:
         title=event_data.title,
         hero_image_url=event_data.hero_image_url,
         color_scheme=_dump_model(event_data.color_scheme),
+        sponsors=event_data.sponsors,
     )
     db.add(event)
 

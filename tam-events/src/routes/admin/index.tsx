@@ -105,6 +105,7 @@ export default function AdminRoute() {
               title: event.title,
               status: itemsCount > 0 ? "live" : "draft",
               itemsCount,
+              sponsors: detail.sponsors,
               footer_links: detail.footer_links,
               color_scheme: detail.color_scheme,
             } satisfies AdminEvent;
@@ -119,6 +120,7 @@ export default function AdminRoute() {
               title: event.title,
               status: "draft",
               itemsCount: 0,
+              sponsors: null,
               footer_links: null,
               color_scheme: undefined,
             } satisfies AdminEvent;
@@ -231,6 +233,7 @@ export default function AdminRoute() {
         event.id === updatedEvent.id
           ? {
               ...event,
+              sponsors: updatedEvent.sponsors,
               footer_links: updatedEvent.footer_links,
               color_scheme: updatedEvent.color_scheme,
             }

@@ -142,6 +142,7 @@ export default function EventCreateModal({
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
   const [heroImageUrl, setHeroImageUrl] = useState("");
+  const [sponsors, setSponsors] = useState<string[]>([]);
   const [colorScheme, setColorScheme] = useState<ThemeColors>(DEFAULT_COLORS);
   const [jsonFileName, setJsonFileName] = useState<string | null>(null);
   const [eventItems, setEventItems] = useState<EventItemCreate[]>([]);
@@ -158,6 +159,7 @@ export default function EventCreateModal({
     setTitle("");
     setSlug("");
     setHeroImageUrl("");
+    setSponsors([""]);
     setColorScheme(DEFAULT_COLORS);
     setJsonFileName(null);
     setEventItems([]);
@@ -192,6 +194,24 @@ export default function EventCreateModal({
       ...current,
       [key]: value,
     }));
+  };
+
+  const handleAddSponsor = () => {
+    setSponsors((current) => [...current, ""]);
+  };
+
+  const handleSponsorChange = (index: number, value: string) => {
+    setSponsors((current) =>
+      current.map((sponsor, currentIndex) =>
+        currentIndex === index ? value : sponsor,
+      ),
+    );
+  };
+
+  const handleRemoveSponsor = (index: number) => {
+    setSponsors((current) =>
+      current.filter((_, currentIndex) => currentIndex !== index),
+    );
   };
 
   const handleJsonUpload = async (
@@ -233,11 +253,18 @@ export default function EventCreateModal({
       return;
     }
 
+    const normalizedSponsors = sponsors
+      .map((sponsor) => sponsor.trim())
+      .filter(Boolean);
+
     const payload: EventCreate = {
       title: title.trim(),
       slug: slug.trim(),
       hero_image_url: heroImageUrl.trim() || null,
       color_scheme: colorScheme,
+      ...(normalizedSponsors.length > 0
+        ? { sponsors: normalizedSponsors }
+        : {}),
       ...(eventItems.length > 0 ? { event_items: eventItems } : {}),
     };
 
@@ -319,6 +346,51 @@ export default function EventCreateModal({
                 disabled={isSaving}
               />
             </label>
+
+            <p className="admin__eyebrow">Sponsors</p>
+            <p className="admin__muted">
+              Use direct image URLs, the same way you would for the hero image.
+            </p>
+
+            {sponsors.map((sponsor, index) => (
+              <div className="form__row" key={`new-sponsor-${index}`}>
+                <label className="form__field">
+                  <span>
+                    {index === 0
+                      ? "Sponsor image URL (optional)"
+                      : `Sponsor image URL ${index + 1} (optional)`}
+                  </span>
+                  <input
+                    type="url"
+                    value={sponsor}
+                    onChange={(e) => handleSponsorChange(index, e.target.value)}
+                    placeholder="https://tam-assets.s3.amazonaws.com/sponsors/logo.png"
+                    disabled={isSaving}
+                  />
+                </label>
+                {sponsors.length > 1 ? (
+                  <div className="form__field" style={{ alignSelf: "end" }}>
+                    <button
+                      type="button"
+                      className="admin__button admin__button--ghost"
+                      onClick={() => handleRemoveSponsor(index)}
+                      disabled={isSaving}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ) : null}
+              </div>
+            ))}
+
+            <button
+              type="button"
+              className="admin__button admin__button--ghost"
+              onClick={handleAddSponsor}
+              disabled={isSaving}
+            >
+              Add another sponsor image URL
+            </button>
 
             <div className="form__row">
               <label className="form__field form__field--color">
