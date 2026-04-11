@@ -46,8 +46,8 @@ async def seed_database(clear: bool = False):
         await clear_all_data()
     
     # Seed data
-    await seed_users.seed_user_database()
-    await seed_event_database()
+    # await seed_users.seed_user_database()
+    # await seed_event_database()
     print("✅ Database seeded successfully!")
 
 

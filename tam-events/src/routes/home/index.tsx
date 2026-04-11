@@ -394,6 +394,7 @@ export default function HomeRoute() {
     () => buildScheduleDays(eventData?.event_items ?? dummyEventItems),
     [eventData],
   );
+  const sponsorImages = eventData?.sponsors ?? [];
   const openDayIndex = useMemo(() => {
     const todayIsoDate = new Date().toISOString().split("T")[0];
     const todayIndex = scheduleDays.findIndex(
@@ -542,8 +543,50 @@ export default function HomeRoute() {
         </section>
       ) : (
         <section className="layout__panel">
-          <h2>Sponsors</h2>
-          <p>Partner highlights and sponsor spotlights will live here.</p>
+          <div className="schedule__intro">
+            <div>
+              <h2>Sponsors</h2>
+              <p>
+                Thanks to the organizations helping make this event possible.
+              </p>
+              {isLoading ? (
+                <p className="schedule__muted">Loading sponsors...</p>
+              ) : null}
+              {loadError ? (
+                <p className="schedule__muted">{loadError}</p>
+              ) : null}
+            </div>
+          </div>
+
+          {!isLoading && !loadError && sponsorImages.length === 0 ? (
+            <div className="schedule__sponsors-empty">
+              <p className="schedule__muted">
+                Sponsor logos will appear here once they are added for this
+                event.
+              </p>
+            </div>
+          ) : null}
+
+          {sponsorImages.length > 0 ? (
+            <div
+              className="schedule__sponsors-grid"
+              aria-label="Event sponsors"
+            >
+              {sponsorImages.map((imageUrl, index) => (
+                <article
+                  className="schedule__sponsor-card"
+                  key={`${imageUrl}-${index}`}
+                >
+                  <img
+                    className="schedule__sponsor-image"
+                    src={imageUrl}
+                    alt={`Sponsor logo ${index + 1} for ${title}`}
+                    loading="lazy"
+                  />
+                </article>
+              ))}
+            </div>
+          ) : null}
         </section>
       )}
     </LayoutShell>
