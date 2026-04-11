@@ -309,12 +309,15 @@
 .schedule__track {
   display: inline-flex;
   align-items: center;
+  max-width: 100%;
   margin-top: 0.35rem;
   padding: 0.15rem 0.6rem;
   border-radius: 999px;
   border: 1px solid var(--line);
   background: rgb(var(--accent-rgb) / 0.08);
   color: var(--ink);
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .schedule__location {
