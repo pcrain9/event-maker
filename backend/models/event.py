@@ -19,10 +19,18 @@ class Event(Base):
     footer_links: Mapped[Optional[list[dict]]] = mapped_column(JSON, nullable=True)
     
     # Relationship to Event_Item
-    items: Mapped[list["Event_Item"]] = relationship("Event_Item", back_populates="event")
+    items: Mapped[list["Event_Item"]] = relationship(
+        "Event_Item",
+        back_populates="event",
+        cascade="all, delete-orphan",
+    )
     
     # Relationship to Announcement
-    announcements: Mapped[list["Announcement"]] = relationship("Announcement", back_populates="event")
+    announcements: Mapped[list["Announcement"]] = relationship(
+        "Announcement",
+        back_populates="event",
+        cascade="all, delete-orphan",
+    )
 
     def __repr__(self) -> str:  # pragma: no cover - tiny helper
         return f"<Event id={self.id}>"

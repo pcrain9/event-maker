@@ -7,12 +7,7 @@ export type LayoutNavItem = {
 };
 
 export type BannerProps = {
-  title: string;
-  subtitle: string;
-  navItems?: LayoutNavItem[];
   heroImageUrl?: string | null;
-  heroAction?: ReactNode;
-  isLoading?: boolean;
 };
 
 export type LayoutNotice = {
@@ -94,6 +89,18 @@ export type EventItemUpdate = {
   slides?: string[] | null;
 };
 
+export type EventItemCreate = {
+  title: string;
+  sponsor?: string | null;
+  time: string;
+  speakers?: Speaker[] | null;
+  link?: string | null;
+  description?: string | null;
+  location?: string | null;
+  cancelled?: boolean | null;
+  slides?: string[] | null;
+};
+
 export type FooterLink = {
   link_title: string;
   href: string;
@@ -109,6 +116,7 @@ export type EventCreate = {
   title: string;
   hero_image_url?: string | null;
   color_scheme: ThemeColors;
+  event_items?: EventItemCreate[];
 };
 
 export type EventAdminResponse = {

@@ -44,6 +44,7 @@ class EventCreate(BaseModel):
     title: str
     hero_image_url: Optional[str] = None
     color_scheme: ColorScheme
+    event_items: Optional[list['EventItemCreate']] = None
 
     class Config:
         from_attributes = True
@@ -95,6 +96,21 @@ class EventItemUpdate(BaseModel):
     description: Optional[str] = None
     location: Optional[str] = None
     cancelled: Optional[bool] = None
+    slides: Optional[list] = None
+
+    class Config:
+        from_attributes = True
+
+class EventItemCreate(BaseModel):
+    """Schema for creating event items."""
+    title: str
+    sponsor: Optional[str] = None
+    time: datetime
+    speakers: Optional[list['Speaker']] = None
+    link: Optional[str] = None
+    description: Optional[str] = None
+    location: Optional[str] = None
+    cancelled: Optional[bool] = False
     slides: Optional[list] = None
 
     class Config:

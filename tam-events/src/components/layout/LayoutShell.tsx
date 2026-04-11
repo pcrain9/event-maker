@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import Banner from "../banner/Banner";
 import type { LayoutShellProps } from "../../types";
 import {
@@ -15,7 +16,7 @@ export default function LayoutShell({
   notices = [],
   footerLinks = null,
   announcementStorageScope = "guest",
-  heroImageUrl: _heroImageUrl, // Accept but not used yet
+  heroImageUrl,
   heroAction,
   isLoading = false,
   children,
@@ -107,15 +108,52 @@ export default function LayoutShell({
         </section>
       )}
 
-      <Banner
-        title={title}
-        subtitle={subtitle}
-        navItems={navItems}
-        heroAction={heroAction}
-        isLoading={isLoading}
-      />
+      <Banner heroImageUrl={heroImageUrl} />
 
-      <main className="layout__content">{children}</main>
+      <main className="layout__content">
+        <section className="layout__masthead">
+          <div className="layout__masthead-header">
+            <div className="layout__masthead-copy">
+              <div className="layout__masthead-top"></div>
+              {isLoading ? (
+                <>
+                  <div className="layout__title-skeleton" aria-hidden="true" />
+                  <div
+                    className="layout__subtitle-skeleton"
+                    aria-hidden="true"
+                  />
+                </>
+              ) : (
+                <>
+                  <h1 className="layout__title">{title}</h1>
+                  {subtitle ? (
+                    <p className="layout__subtitle">{subtitle}</p>
+                  ) : null}
+                </>
+              )}
+            </div>
+            {heroAction ? (
+              <div className="layout__masthead-action">{heroAction}</div>
+            ) : null}
+          </div>
+          {navItems.length > 0 ? (
+            <nav className="layout__nav" aria-label="Primary">
+              {navItems.map((item) => (
+                <Link
+                  key={item.href}
+                  to={item.href}
+                  className={`layout__nav-link${item.isActive ? " is-active" : ""}`}
+                  aria-current={item.isActive ? "page" : undefined}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
+          ) : null}
+        </section>
+
+        {children}
+      </main>
 
       <footer className="layout__footer">
         {footerLinks && footerLinks.length > 0 ? (

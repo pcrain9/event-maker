@@ -11,14 +11,20 @@ type HeroLandingProps = {
 };
 
 export const HeroLanding = ({ cornerAction }: HeroLandingProps) => {
+  const CLOUDFLARE_BASE_URL = import.meta.env.VITE_CLOUDFLARE_BASE_URL?.trim();
+
   return (
     <section className="hero-landing">
       {cornerAction ? (
         <div className="hero-landing__corner-action">{cornerAction}</div>
       ) : null}
       <div className="hero-landing__content">
-        <h1 className="hero-landing__title">Welcome to TAM</h1>
-        <p className="hero-landing__subtitle">Texas Association of Museums</p>
+        <h1 className="hero-landing__title">TAM Events</h1>
+        <img
+          src={`${CLOUDFLARE_BASE_URL}logos/tam%20logo.png`}
+          alt="TAM Events"
+          className="hero-landing__logo"
+        />
       </div>
     </section>
   );
