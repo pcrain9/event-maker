@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import Banner from "../banner/Banner";
+import ScrollToTopButton from "../scroll-to-top";
 import type { LayoutShellProps } from "../../types";
 import {
   cleanupExpiredDismissals,
@@ -176,6 +177,8 @@ export default function LayoutShell({
           <span>817.332.1177</span>
         </div>
       </footer>
+
+      <ScrollToTopButton />
     </div>
   );
 }
