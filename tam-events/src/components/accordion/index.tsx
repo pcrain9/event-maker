@@ -75,7 +75,9 @@ export const ScheduleAccordion = ({
                   ) : null}
                   {trackLabel ? (
                     <span className="schedule__track">
-                      Sponsored by: {trackLabel}
+                      {!trackLabel.includes("Sponsored by")
+                        ? `Sponsored by: ${trackLabel}`
+                        : trackLabel}
                     </span>
                   ) : null}
                   {speakerNames.length > 0 ? (
