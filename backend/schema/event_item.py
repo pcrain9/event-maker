@@ -44,6 +44,8 @@ class EventCreate(BaseModel):
     title: str
     hero_image_url: Optional[str] = None
     color_scheme: ColorScheme
+    sponsors: Optional[list[str]] = None
+    event_items: Optional[list['EventItemCreate']] = None
 
     class Config:
         from_attributes = True
@@ -56,6 +58,7 @@ class EventAdminResponse(BaseModel):
     title: str
     hero_image_url: Optional[str] = None
     color_scheme: ColorScheme
+    sponsors: Optional[list[str]] = None
     footer_links: Optional[list[FooterLink]] = None
 
     class Config:
@@ -100,9 +103,25 @@ class EventItemUpdate(BaseModel):
     class Config:
         from_attributes = True
 
+class EventItemCreate(BaseModel):
+    """Schema for creating event items."""
+    title: str
+    sponsor: Optional[str] = None
+    time: datetime
+    speakers: Optional[list['Speaker']] = None
+    link: Optional[str] = None
+    description: Optional[str] = None
+    location: Optional[str] = None
+    cancelled: Optional[bool] = False
+    slides: Optional[list] = None
+
+    class Config:
+        from_attributes = True
+
 class EventUpdate(BaseModel):
     footer_links: Optional[list[FooterLink]] = None
     color_scheme: Optional[ColorScheme] = None
+    sponsors: Optional[list[str]] = None
 
     class Config:
         from_attributes = True
@@ -115,6 +134,7 @@ class EventItemResponse(BaseModel):
     title: str
     hero_image_url: Optional[str] = None
     color_scheme: ColorScheme
+    sponsors: Optional[list[str]] = None
     footer_links: Optional[list[FooterLink]] = None
     
     # List of event items

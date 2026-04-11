@@ -95,3 +95,9 @@
     right: 0.7rem;
   }
 }
+.hero-landing__logo{
+  width:400px;
+  @media (max-width: 480px) {
+    width: 250px;
+  }
+}

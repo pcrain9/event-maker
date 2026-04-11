@@ -7,6 +7,7 @@ from backend.db import get_db
 from backend.schema.event_item import (
     EventAdminResponse,
     EventCreate,
+    EventItemCreate,
     EventItemResponse,
     EventItemUpdate,
     EventUpdate,
@@ -20,7 +21,7 @@ from backend.services.events import (
     get_all_events,
     update_event,
 )
-from backend.services.event_items import update_event_item
+from backend.services.event_items import create_event_item, update_event_item
 from backend.core.auth import require_admin
 
 router = APIRouter(prefix="/events", tags=["events"])
@@ -96,6 +97,28 @@ async def update_event_route(
         raise HTTPException(
             status_code=500,
             detail="Database error occurred while updating event"
+        )
+
+
+@router.post("/{event_id}/items", response_model=EventItemDetail, status_code=201)
+async def create_event_item_route(
+    event_id: int,
+    item_data: EventItemCreate,
+    _: Annotated[User, Depends(require_admin)],
+    db: AsyncSession = Depends(get_db),
+):
+    """Create an event item for an existing event (admin only)."""
+    try:
+        created = await create_event_item(db, event_id, item_data)
+
+        if not created:
+            raise HTTPException(status_code=404, detail="Event not found")
+
+        return created
+    except SQLAlchemyError:
+        raise HTTPException(
+            status_code=500,
+            detail="Database error occurred while creating event item",
         )
 
 

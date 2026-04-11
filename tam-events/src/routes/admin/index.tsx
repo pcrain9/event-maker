@@ -55,6 +55,9 @@ export default function AdminRoute() {
   >(null);
   const [selectedEvent, setSelectedEvent] = useState<AdminEvent | null>(null);
   const [selectedItem, setSelectedItem] = useState<AdminEventItem | null>(null);
+  const [selectedEventIdForCreate, setSelectedEventIdForCreate] = useState<
+    number | null
+  >(null);
   const [selectedAnnouncement, setSelectedAnnouncement] =
     useState<AdminAnnouncement | null>(null);
   const [selectedAdminUser, setSelectedAdminUser] = useState<AdminUser | null>(
@@ -102,6 +105,7 @@ export default function AdminRoute() {
               title: event.title,
               status: itemsCount > 0 ? "live" : "draft",
               itemsCount,
+              sponsors: detail.sponsors,
               footer_links: detail.footer_links,
               color_scheme: detail.color_scheme,
             } satisfies AdminEvent;
@@ -116,6 +120,7 @@ export default function AdminRoute() {
               title: event.title,
               status: "draft",
               itemsCount: 0,
+              sponsors: null,
               footer_links: null,
               color_scheme: undefined,
             } satisfies AdminEvent;
@@ -172,8 +177,9 @@ export default function AdminRoute() {
     setSearchParams(next);
   };
 
-  const openEventItemModal = (item?: AdminEventItem) => {
+  const openEventItemModal = (item?: AdminEventItem, eventId?: number) => {
     setSelectedItem(item ?? null);
+    setSelectedEventIdForCreate(eventId ?? item?.event_id ?? null);
     setActiveModal("event-item");
   };
 
@@ -200,6 +206,7 @@ export default function AdminRoute() {
     setActiveModal(null);
     setSelectedEvent(null);
     setSelectedItem(null);
+    setSelectedEventIdForCreate(null);
     setSelectedAnnouncement(null);
     setSelectedAdminUser(null);
   };
@@ -226,6 +233,7 @@ export default function AdminRoute() {
         event.id === updatedEvent.id
           ? {
               ...event,
+              sponsors: updatedEvent.sponsors,
               footer_links: updatedEvent.footer_links,
               color_scheme: updatedEvent.color_scheme,
             }
@@ -262,7 +270,7 @@ export default function AdminRoute() {
           <EventItemsTab
             events={eventSlugs}
             onEditItem={openEventItemModal}
-            onNewItem={() => openEventItemModal()}
+            onNewItem={(eventId) => openEventItemModal(undefined, eventId)}
             refreshRef={(ref) => {
               eventItemsTabRef.current = ref;
             }}
@@ -292,12 +300,14 @@ export default function AdminRoute() {
         isOpen={activeModal === "event-item"}
         onClose={closeModal}
         selectedItem={selectedItem}
+        initialEventId={selectedEventIdForCreate}
         events={events}
         onSave={() => {
           closeModal();
 
           // Refresh the event items list after saving
           eventItemsTabRef.current?.refreshEventItems();
+          void fetchEventSlugs();
         }}
       />
       <EventModal

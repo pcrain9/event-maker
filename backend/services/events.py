@@ -13,7 +13,38 @@ from backend.schema.event_item import (
     EventUpdate,
     FooterLink,
     EventCreate,
+    EventItemCreate,
 )
+
+
+def _dump_model(model: object, *, exclude_unset: bool = False) -> dict:
+    if hasattr(model, "model_dump"):
+        return model.model_dump(exclude_unset=exclude_unset)  # type: ignore[attr-defined]
+    return model.dict(exclude_unset=exclude_unset)  # type: ignore[attr-defined]
+
+
+def _build_event_item_models(
+    event: Event,
+    event_items: list[EventItemCreate],
+) -> list[Event_Item]:
+    allowed_keys = {
+        "title",
+        "sponsor",
+        "time",
+        "speakers",
+        "link",
+        "description",
+        "location",
+        "cancelled",
+        "slides",
+    }
+    return [
+        Event_Item(
+            event=event,
+            **{key: value for key, value in _dump_model(item).items() if key in allowed_keys},
+        )
+        for item in event_items
+    ]
 
 async def get_event(db:AsyncSession, event_id: int) -> Event | None:
     """
@@ -88,6 +119,7 @@ async def get_event_with_items(slug: str, db: AsyncSession) -> EventItemResponse
     event_slug = event.slug
     event_title = event.title
     hero_image_url = event.hero_image_url
+    sponsors = list(event.sponsors) if event.sponsors is not None else None
     footer_links = (
         [
             link if isinstance(link, FooterLink) else FooterLink(**link)
@@ -129,6 +161,7 @@ async def get_event_with_items(slug: str, db: AsyncSession) -> EventItemResponse
         title=event_title,
         hero_image_url=hero_image_url,
         color_scheme=color_scheme,
+        sponsors=sponsors,
         footer_links=footer_links,
         event_items=items_list
     )
@@ -169,6 +202,8 @@ async def update_event(
     from sqlalchemy.orm.attributes import flag_modified
     if "color_scheme" in update_data:
         flag_modified(event, "color_scheme")
+    if "sponsors" in update_data:
+        flag_modified(event, "sponsors")
     if "footer_links" in update_data:
         flag_modified(event, "footer_links")
 
@@ -199,15 +234,17 @@ async def create_event(db: AsyncSession, event_data: EventCreate) -> Event:
         slug=event_data.slug,
         title=event_data.title,
         hero_image_url=event_data.hero_image_url,
-        color_scheme=(
-            event_data.color_scheme.model_dump()  # type: ignore[attr-defined]
-            if hasattr(event_data.color_scheme, "model_dump")
-            else event_data.color_scheme.dict()
-        ),
+        color_scheme=_dump_model(event_data.color_scheme),
+        sponsors=event_data.sponsors,
     )
     db.add(event)
 
     try:
+        await db.flush()
+
+        if event_data.event_items:
+            db.add_all(_build_event_item_models(event, event_data.event_items))
+
         await db.commit()
         await db.refresh(event)
         return event

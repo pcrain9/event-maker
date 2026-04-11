@@ -28,9 +28,6 @@ const normalizeHomeTab = (value: string | null): HomeTab => {
   return DEFAULT_TAB;
 };
 
-const HERO_PLACEHOLDER_URL =
-  "https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=1600&q=80";
-
 const dummyEventItems: EventItem[] = [
   {
     id: 101,
@@ -250,15 +247,26 @@ const buildScheduleDays = (items: EventItem[]): ScheduleDay[] => {
 
 const applyColorScheme = (scheme: ThemeColors) => {
   const root = document.documentElement;
+  const normalizedHeading = scheme.heading?.trim().toLowerCase();
+  const normalizedText = scheme.text.trim().toLowerCase();
+  const headingColor =
+    !normalizedHeading || normalizedHeading === normalizedText
+      ? scheme.primary
+      : scheme.heading;
 
   // Core color tokens
   root.style.setProperty("--bg", scheme.background);
+  root.style.setProperty("--heading", headingColor);
   root.style.setProperty("--ink", scheme.text);
   root.style.setProperty("--ink-rgb", hexToRgbTriplet(scheme.text));
   root.style.setProperty("--accent", scheme.primary);
   root.style.setProperty("--accent-rgb", hexToRgbTriplet(scheme.primary));
   root.style.setProperty("--muted", scheme.secondary);
   root.style.setProperty("--accent-soft", scheme.secondary);
+  root.style.setProperty(
+    "--accent-soft-contrast",
+    getContrastingTextColor(scheme.secondary),
+  );
 
   // Derive accent-deep from primary (darker shade for hover/active states)
   const accentDeep = dimColor(scheme.primary, 0.8);
@@ -322,14 +330,35 @@ const deriveAltBackground = (bgColor: string): string => {
   return "#" + [r, g, b].map((x) => x.toString(16).padStart(2, "0")).join("");
 };
 
+const getContrastingTextColor = (hexColor: string): string => {
+  const normalized = hexColor.replace("#", "");
+  const expanded =
+    normalized.length === 3
+      ? normalized
+          .split("")
+          .map((ch) => ch + ch)
+          .join("")
+      : normalized;
+
+  const value = parseInt(expanded, 16);
+  const r = (value >> 16) & 255;
+  const g = (value >> 8) & 255;
+  const b = value & 255;
+  const luminance = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+
+  return luminance < 0.5 ? "#ffffff" : "#111111";
+};
+
 const EVENT_COLOR_OVERRIDE_KEYS = [
   "--bg",
+  "--heading",
   "--ink",
   "--ink-rgb",
   "--accent",
   "--accent-rgb",
   "--muted",
   "--accent-soft",
+  "--accent-soft-contrast",
   "--accent-deep",
   "--bg-alt",
   "--card",
@@ -365,6 +394,7 @@ export default function HomeRoute() {
     () => buildScheduleDays(eventData?.event_items ?? dummyEventItems),
     [eventData],
   );
+  const sponsorImages = eventData?.sponsors ?? [];
   const openDayIndex = useMemo(() => {
     const todayIsoDate = new Date().toISOString().split("T")[0];
     const todayIndex = scheduleDays.findIndex(
@@ -452,7 +482,7 @@ export default function HomeRoute() {
   }, [slug]);
 
   const title = eventData?.title ?? "Today at TAM";
-  const heroImageUrl = eventData?.hero_image_url ?? HERO_PLACEHOLDER_URL;
+  const heroImageUrl = eventData?.hero_image_url ?? null;
 
   useEffect(() => {
     const pageLabel = tab === "sponsors" ? "Sponsors" : "Schedule";
@@ -463,7 +493,7 @@ export default function HomeRoute() {
   return (
     <LayoutShell
       title={title}
-      subtitle="Browse the program, jump into highlighted sessions, and keep an eye on room shifts as they roll in."
+      subtitle=""
       navItems={navItems}
       notices={notices}
       footerLinks={eventData?.footer_links ?? null}
@@ -513,8 +543,50 @@ export default function HomeRoute() {
         </section>
       ) : (
         <section className="layout__panel">
-          <h2>Sponsors</h2>
-          <p>Partner highlights and sponsor spotlights will live here.</p>
+          <div className="schedule__intro">
+            <div>
+              <h2>Sponsors</h2>
+              <p>
+                Thanks to the organizations helping make this event possible.
+              </p>
+              {isLoading ? (
+                <p className="schedule__muted">Loading sponsors...</p>
+              ) : null}
+              {loadError ? (
+                <p className="schedule__muted">{loadError}</p>
+              ) : null}
+            </div>
+          </div>
+
+          {!isLoading && !loadError && sponsorImages.length === 0 ? (
+            <div className="schedule__sponsors-empty">
+              <p className="schedule__muted">
+                Sponsor logos will appear here once they are added for this
+                event.
+              </p>
+            </div>
+          ) : null}
+
+          {sponsorImages.length > 0 ? (
+            <div
+              className="schedule__sponsors-grid"
+              aria-label="Event sponsors"
+            >
+              {sponsorImages.map((imageUrl, index) => (
+                <article
+                  className="schedule__sponsor-card"
+                  key={`${imageUrl}-${index}`}
+                >
+                  <img
+                    className="schedule__sponsor-image"
+                    src={imageUrl}
+                    alt={`Sponsor logo ${index + 1} for ${title}`}
+                    loading="lazy"
+                  />
+                </article>
+              ))}
+            </div>
+          ) : null}
         </section>
       )}
     </LayoutShell>
