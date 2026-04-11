@@ -7,12 +7,7 @@ export type LayoutNavItem = {
 };
 
 export type BannerProps = {
-  title: string;
-  subtitle: string;
-  navItems?: LayoutNavItem[];
   heroImageUrl?: string | null;
-  heroAction?: ReactNode;
-  isLoading?: boolean;
 };
 
 export type LayoutNotice = {

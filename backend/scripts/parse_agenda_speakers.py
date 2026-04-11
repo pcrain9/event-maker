@@ -30,6 +30,7 @@ import unicodedata
 from datetime import datetime, time as dt_time
 from pathlib import Path
 from typing import Optional
+from urllib.parse import quote
 
 
 MONTHS: dict[str, int] = {
@@ -56,6 +57,8 @@ _HONORIFIC_SUFFIX_RE = re.compile(
     re.IGNORECASE,
 )
 _FALSEY_HEADSHOT_VALUES = {"", "false", "no", "n", "0", "none", "n/a"}
+_HEADSHOT_FILENAME_ENCODINGS = ("utf-8-sig", "cp850", "cp1252")
+_HEADSHOT_IMAGE_SUFFIXES = {".jpg", ".jpeg", ".png", ".jfif", ".webp"}
 
 
 def _to_ascii(text: str) -> str:
@@ -69,21 +72,59 @@ def _clean_cell(value: str) -> str:
     return value.strip()
 
 
-def speaker_name_to_filename(raw_name: str) -> str:
+def _normalize_speaker_lookup_name(raw_name: str) -> str:
     name = raw_name.strip()
     name = _HONORIFIC_PREFIX_RE.sub("", name)
     name = _HONORIFIC_SUFFIX_RE.sub("", name)
     name = _to_ascii(name).lower().strip()
+    return re.sub(r"[^a-z0-9]+", " ", name).strip()
+
+
+def speaker_name_to_filename(raw_name: str) -> str:
+    name = _normalize_speaker_lookup_name(raw_name)
     name = re.sub(r"[^a-z0-9]+", "-", name).strip("-")
     return f"{name}.jpg"
 
 
-def speaker_name_to_headshot_path(raw_name: str) -> str:
-    name = raw_name.strip()
-    name = _HONORIFIC_PREFIX_RE.sub("", name)
-    name = _HONORIFIC_SUFFIX_RE.sub("", name)
-    name = _to_ascii(name).lower().strip()
-    return re.sub(r"[^a-z0-9]+", "%", name).strip("%")
+def load_headshot_filename_map(path: Path) -> dict[str, str]:
+    if not path.exists():
+        return {}
+
+    raw = path.read_bytes()
+    text = ""
+    for encoding in _HEADSHOT_FILENAME_ENCODINGS:
+        try:
+            text = raw.decode(encoding)
+            break
+        except UnicodeDecodeError:
+            continue
+    else:
+        text = raw.decode("utf-8", errors="ignore")
+
+    headshot_map: dict[str, str] = {}
+    for raw_line in text.splitlines():
+        filename = _clean_cell(raw_line)
+        if not filename:
+            continue
+
+        suffix = Path(filename).suffix.lower()
+        if suffix not in _HEADSHOT_IMAGE_SUFFIXES:
+            continue
+
+        normalized_name = _normalize_speaker_lookup_name(Path(filename).stem)
+        if normalized_name and normalized_name not in headshot_map:
+            headshot_map[normalized_name] = filename
+
+    return headshot_map
+
+
+def resolve_headshot_filename(
+    raw_name: str, headshot_filename_map: Optional[dict[str, str]] = None
+) -> str:
+    normalized_name = _normalize_speaker_lookup_name(raw_name)
+    if headshot_filename_map and normalized_name in headshot_filename_map:
+        return headshot_filename_map[normalized_name]
+    return speaker_name_to_filename(raw_name)
 
 
 def _parse_time_str(raw: str) -> Optional[dt_time]:
@@ -127,7 +168,12 @@ def _split_name_and_institution(name_value: str, institution_value: str) -> tupl
     return first.strip(), remainder.strip()
 
 
-def _build_headshot_url(raw_value: str, speaker_name: str, r2_base_url: str) -> str:
+def _build_headshot_url(
+    raw_value: str,
+    speaker_name: str,
+    r2_base_url: str,
+    headshot_filename_map: Optional[dict[str, str]] = None,
+) -> str:
     if not speaker_name:
         return ""
 
@@ -138,10 +184,10 @@ def _build_headshot_url(raw_value: str, speaker_name: str, r2_base_url: str) -> 
     if lowered in _FALSEY_HEADSHOT_VALUES:
         return ""
 
-    headshot_path = speaker_name_to_headshot_path(speaker_name)
+    headshot_filename = quote(resolve_headshot_filename(speaker_name, headshot_filename_map))
     if r2_base_url:
-        return f"{r2_base_url.rstrip('/')}/headshots/{headshot_path}.jpg"
-    return f"headshots/{headshot_path}.jpg"
+        return f"{r2_base_url.rstrip('/')}/headshots/{headshot_filename}"
+    return f"headshots/{headshot_filename}"
 
 
 def _build_datetime(
@@ -178,7 +224,13 @@ def _normalize_nullable(value: str) -> Optional[str]:
     return cleaned or None
 
 
-def _build_speaker(name_value: str, institution_value: str, headshot_value: str, r2_base_url: str) -> Optional[dict]:
+def _build_speaker(
+    name_value: str,
+    institution_value: str,
+    headshot_value: str,
+    r2_base_url: str,
+    headshot_filename_map: Optional[dict[str, str]] = None,
+) -> Optional[dict]:
     raw_name = _clean_cell(name_value)
     if not raw_name:
         return None
@@ -187,7 +239,12 @@ def _build_speaker(name_value: str, institution_value: str, headshot_value: str,
     return {
         "name": name,
         "institution": institution,
-        "headshot": _build_headshot_url(headshot_value, name, r2_base_url),
+        "headshot": _build_headshot_url(
+            headshot_value,
+            name,
+            r2_base_url,
+            headshot_filename_map,
+        ),
     }
 
 
@@ -206,7 +263,11 @@ def detect_r2_base_url(repo_root: Path) -> str:
     return ""
 
 
-def build_event_items_from_agenda(path: Path, r2_base_url: str) -> tuple[list[dict], list[str]]:
+def build_event_items_from_agenda(
+    path: Path,
+    r2_base_url: str,
+    headshot_filename_map: Optional[dict[str, str]] = None,
+) -> tuple[list[dict], list[str]]:
     items: list[dict] = []
     warnings: list[str] = []
     current_date: Optional[tuple[int, int, int]] = None
@@ -265,7 +326,13 @@ def build_event_items_from_agenda(path: Path, r2_base_url: str) -> tuple[list[di
                 "slides": None,
             }
 
-            speaker = _build_speaker(speaker_name_raw, institution_raw, headshot_raw, r2_base_url)
+            speaker = _build_speaker(
+                speaker_name_raw,
+                institution_raw,
+                headshot_raw,
+                r2_base_url,
+                headshot_filename_map,
+            )
             if speaker is not None:
                 current_item["speakers"].append(speaker)
 
@@ -279,7 +346,13 @@ def build_event_items_from_agenda(path: Path, r2_base_url: str) -> tuple[list[di
                 )
                 continue
 
-            speaker = _build_speaker(speaker_name_raw, institution_raw, headshot_raw, r2_base_url)
+            speaker = _build_speaker(
+                speaker_name_raw,
+                institution_raw,
+                headshot_raw,
+                r2_base_url,
+                headshot_filename_map,
+            )
             if speaker is not None:
                 current_item["speakers"].append(speaker)
             if sponsor_raw and not current_item["sponsor"]:
@@ -292,7 +365,11 @@ def build_event_items_from_agenda(path: Path, r2_base_url: str) -> tuple[list[di
     return items, warnings
 
 
-def write_headshot_map(items: list[dict], output_path: Path) -> None:
+def write_headshot_map(
+    items: list[dict],
+    output_path: Path,
+    headshot_filename_map: Optional[dict[str, str]] = None,
+) -> None:
     seen: set[str] = set()
     rows: list[dict[str, str]] = []
 
@@ -306,7 +383,7 @@ def write_headshot_map(items: list[dict], output_path: Path) -> None:
             rows.append(
                 {
                     "speaker_name": name,
-                    "derived_filename": speaker_name_to_filename(name),
+                    "derived_filename": resolve_headshot_filename(name, headshot_filename_map),
                     "headshot_url": speaker.get("headshot", ""),
                 }
             )
@@ -325,6 +402,7 @@ def write_headshot_map(items: list[dict], output_path: Path) -> None:
 def main(argv: list[str] | None = None) -> int:
     repo_root = Path(__file__).resolve().parents[2]
     default_r2_base_url = detect_r2_base_url(repo_root)
+    headshot_filename_map = load_headshot_filename_map(repo_root / "agendas" / "filenames.txt")
 
     ap = argparse.ArgumentParser(
         description="Convert an agenda CSV into backend-compatible event-item JSON."
@@ -358,7 +436,11 @@ def main(argv: list[str] | None = None) -> int:
     if args.speakers:
         print("NOTE: --speakers is ignored; the agenda CSV already includes speaker data.")
 
-    items, warnings = build_event_items_from_agenda(agenda_path, args.r2_base_url)
+    items, warnings = build_event_items_from_agenda(
+        agenda_path,
+        args.r2_base_url,
+        headshot_filename_map=headshot_filename_map,
+    )
 
     if warnings:
         print(f"\n{'-' * 60}")
@@ -372,7 +454,7 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.headshot_map:
         headshot_map_path = Path(args.headshot_map)
-        write_headshot_map(items, headshot_map_path)
+        write_headshot_map(items, headshot_map_path, headshot_filename_map=headshot_filename_map)
         print(f"Wrote headshot mapping -> {headshot_map_path}")
 
     return 0
