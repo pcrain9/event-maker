@@ -3,6 +3,7 @@ import { createEventItem, updateEventItem } from "../../../api";
 import { useToastStore } from "../../../components/toast/store/toastStore";
 import type { AdminEvent, AdminEventItem, Speaker } from "../../../types";
 import type { EventItemCreate, EventItemUpdate } from "../../../types";
+import { toDateTimeLocalValue } from "../../../utils/date";
 
 type EventItemModalProps = {
   isOpen: boolean;
@@ -29,6 +30,9 @@ export default function EventItemModal({
   const [selectedEventId, setSelectedEventId] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const selectedEventTitle =
+    events.find((event) => event.id === selectedEventId)?.title ?? "";
 
   // Initialize form when modal opens or selectedItem changes
   useEffect(() => {
@@ -232,52 +236,37 @@ export default function EventItemModal({
               />
             </label>
 
-            <div className="form__row">
-              <label className="form__field">
-                <span>Event</span>
-                <select
-                  value={selectedEventId ?? ""}
-                  onChange={(e) =>
-                    setSelectedEventId(Number(e.target.value) || null)
-                  }
-                  disabled={loading}
-                >
-                  <option value="">Select event</option>
-                  {events.map((event) => (
-                    <option key={event.id} value={event.id}>
-                      {event.title}
-                    </option>
-                  ))}
-                </select>
-              </label>
+            <label className="form__field">
+              <span>Event</span>
+              <input
+                type="text"
+                value={selectedEventTitle}
+                disabled
+                readOnly
+                placeholder="Assigned event"
+              />
+            </label>
 
-              <label className="form__field">
-                <span>Cancelled</span>
-                <select
-                  value={formData.cancelled ? "true" : "false"}
-                  onChange={(e) =>
-                    handleInputChange("cancelled", e.target.value === "true")
-                  }
-                  disabled={loading}
-                >
-                  <option value="false">Not cancelled</option>
-                  <option value="true">Cancelled</option>
-                </select>
-              </label>
-            </div>
+            <label className="form__field">
+              <span>Cancelled</span>
+              <select
+                value={formData.cancelled ? "true" : "false"}
+                onChange={(e) =>
+                  handleInputChange("cancelled", e.target.value === "true")
+                }
+                disabled={loading}
+              >
+                <option value="false">Not cancelled</option>
+                <option value="true">Cancelled</option>
+              </select>
+            </label>
 
             <div className="form__row">
               <label className="form__field">
                 <span>Session time</span>
                 <input
                   type="datetime-local"
-                  value={
-                    formData.time
-                      ? new Date(formData.time as string)
-                          .toISOString()
-                          .slice(0, 16)
-                      : ""
-                  }
+                  value={toDateTimeLocalValue(formData.time)}
                   onChange={(e) => handleInputChange("time", e.target.value)}
                   disabled={loading}
                 />
