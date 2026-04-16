@@ -54,22 +54,27 @@
 .hero-landing__content {
   max-width: 800px;
   margin: 0 auto;
+  display:flex;
+  gap:24px;
+  align-items: flex-end;
 }
 
 .hero-landing__title {
-  font-size: 48px;
-  font-weight: 700;
-  letter-spacing: -0.5px;
-  margin: 0 0 12px 0;
+  font-family: "Brush Script MT", "Lucida Handwriting", "Segoe Script", cursive;
+  font-size: 58px;
+  font-weight: 400;
+  letter-spacing: 0.5px;
+  margin: 0 0 8px 0;
   color: #1a1a1a;
-  line-height: 1.2;
+  line-height: 1.1;
+  text-shadow: 0 2px 10px rgb(0 0 0 / 0.08);
 
   @media (max-width: 768px) {
-    font-size: 36px;
+    font-size: 44px;
   }
 
   @media (max-width: 480px) {
-    font-size: 28px;
+    font-size: 34px;
   }
 }
 

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { createAnnouncement, updateAnnouncement } from "../../../api";
 import { useToast } from "../../../components/toast";
 import type { AdminAnnouncement } from "../../../types";
+import { toDateTimeLocalValue } from "../../../utils/date";
 
 const TONE_COLORS = {
   info: "#2563eb",
@@ -39,16 +40,6 @@ export default function AnnouncementModal({
 
   const isEditMode = !!selectedAnnouncement;
 
-  // Helper to convert Date to datetime-local format (YYYY-MM-DDTHH:mm) using local time
-  const toDateTimeLocal = (date: Date): string => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    const hours = String(date.getHours()).padStart(2, "0");
-    const minutes = String(date.getMinutes()).padStart(2, "0");
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
-  };
-
   // Populate form when editing
   useEffect(() => {
     if (selectedAnnouncement) {
@@ -56,9 +47,8 @@ export default function AnnouncementModal({
       setSelectedTone(selectedAnnouncement.tone as AnnouncementTone);
       setTitle(selectedAnnouncement.title);
       setMessage(selectedAnnouncement.body);
-      // Convert ISO strings to datetime-local format using local time
-      setStartsAt(toDateTimeLocal(new Date(selectedAnnouncement.starts)));
-      setEndsAt(toDateTimeLocal(new Date(selectedAnnouncement.ends)));
+      setStartsAt(toDateTimeLocalValue(selectedAnnouncement.starts));
+      setEndsAt(toDateTimeLocalValue(selectedAnnouncement.ends));
     } else {
       // Reset form when creating new
       setSelectedEventId(null);
