@@ -19,6 +19,7 @@ import {
   formatDayLabel,
   formatDayDate,
   formatSessionTime,
+  getCalendarDateKey,
 } from "../../utils/date";
 
 const DEFAULT_TAB: HomeTab = "events";
@@ -199,8 +200,12 @@ const buildScheduleDays = (items: EventItem[]): ScheduleDay[] => {
   const groups = new Map<string, EventItem[]>();
 
   items.forEach((item) => {
-    const date = new Date(item.time);
-    const key = date.toISOString().split("T")[0];
+    const key = getCalendarDateKey(item.time);
+
+    if (!key) {
+      return;
+    }
+
     const group = groups.get(key);
 
     if (group) {
@@ -396,7 +401,7 @@ export default function HomeRoute() {
   );
   const sponsorImages = eventData?.sponsors ?? [];
   const openDayIndex = useMemo(() => {
-    const todayIsoDate = new Date().toISOString().split("T")[0];
+    const todayIsoDate = getCalendarDateKey(new Date());
     const todayIndex = scheduleDays.findIndex(
       (day) => day.isoDate === todayIsoDate,
     );
