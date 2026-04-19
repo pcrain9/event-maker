@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import { getEventBySlug } from "../../../api";
+import { deleteEventItem, getEventBySlug } from "../../../api";
+import { useToast } from "../../../components/toast";
 import { formatSessionTime } from "../../../utils/date";
 import type { EventResponse, AdminEventItem } from "../../../types";
 
@@ -20,10 +21,12 @@ export default function EventItemsTab({
   onNewItem,
   refreshRef,
 }: EventItemsTabProps) {
+  const toast = useToast();
   const [eventItems, setEventItems] = useState<AdminEventItem[]>([]);
   const [selectedEventSlug, setSelectedEventSlug] = useState<string | null>(
     null,
   );
+  const [deletingItemId, setDeletingItemId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   // Extract fetchEventItems as a reusable function
@@ -67,6 +70,29 @@ export default function EventItemsTab({
   const selectedEvent = events.find(
     (event) => event.slug === selectedEventSlug,
   );
+
+  const handleDeleteItem = async (item: AdminEventItem) => {
+    const confirmed = window.confirm(
+      `Delete session "${item.title}"? This cannot be undone.`,
+    );
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      setDeletingItemId(item.id);
+      await deleteEventItem(item.event_id, item.id);
+      setEventItems((current) =>
+        current.filter((entry) => entry.id !== item.id),
+      );
+      toast.success("Event item deleted");
+    } catch (err) {
+      console.error("Failed to delete event item", err);
+      toast.error("Failed to delete event item");
+    } finally {
+      setDeletingItemId(null);
+    }
+  };
 
   return (
     <section className="admin-tab-content">
@@ -163,8 +189,16 @@ export default function EventItemsTab({
                       <button
                         className="admin__button admin__button--ghost"
                         onClick={() => onEditItem(item)}
+                        disabled={deletingItemId === item.id}
                       >
                         Edit
+                      </button>
+                      <button
+                        className="admin__button admin__button--ghost"
+                        onClick={() => void handleDeleteItem(item)}
+                        disabled={deletingItemId === item.id}
+                      >
+                        {deletingItemId === item.id ? "Deleting..." : "Delete"}
                       </button>
                     </div>
                   </div>
