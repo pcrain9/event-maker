@@ -86,4 +86,24 @@ async def create_event_item(
     except SQLAlchemyError:
         await db.rollback()
         raise
-   
+
+
+async def delete_event_item(
+    db: AsyncSession,
+    event_id: int,
+    event_item_id: int,
+) -> bool:
+    """Delete a single event item from an event."""
+    fetched_event_item = await get_event_item(db, event_id, event_item_id)
+    if not fetched_event_item:
+        return False
+
+    await db.delete(fetched_event_item)
+
+    try:
+        await db.commit()
+        return True
+    except SQLAlchemyError:
+        await db.rollback()
+        raise
+

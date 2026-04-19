@@ -218,6 +218,16 @@ export const createEvent = async (
 };
 
 /**
+ * Delete a single event item - ADMIN ONLY
+ */
+export const deleteEventItem = async (
+  eventId: number,
+  itemId: number,
+): Promise<void> => {
+  await authenticatedClient.delete(`/events/${eventId}/items/${itemId}`);
+};
+
+/**
  * Delete an event - ADMIN ONLY
  */
 export const deleteEvent = async (eventId: number): Promise<void> => {
