@@ -21,7 +21,11 @@ from backend.services.events import (
     get_all_events,
     update_event,
 )
-from backend.services.event_items import create_event_item, update_event_item
+from backend.services.event_items import (
+    create_event_item,
+    delete_event_item,
+    update_event_item,
+)
 from backend.core.auth import require_admin
 
 router = APIRouter(prefix="/events", tags=["events"])
@@ -146,6 +150,31 @@ async def update_event_item_route(
         raise HTTPException(
             status_code=500,
             detail="Database error occurred while updating event item"
+        )
+
+
+@router.delete("/{event_id}/items/{item_id}")
+async def delete_event_item_route(
+    event_id: int,
+    item_id: int,
+    _: Annotated[User, Depends(require_admin)],
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Delete an event item (admin only).
+
+    Requires admin role to access.
+    """
+    try:
+        deleted = await delete_event_item(db, event_id, item_id)
+        if not deleted:
+            raise HTTPException(status_code=404, detail="Event item not found")
+
+        return {"message": "Event item deleted successfully"}
+    except SQLAlchemyError:
+        raise HTTPException(
+            status_code=500,
+            detail="Database error occurred while deleting event item",
         )
 
 
